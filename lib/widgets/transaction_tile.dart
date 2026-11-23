@@ -19,6 +19,7 @@ class TransactionTile extends StatelessWidget {
     final currencyFormat = NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
     final dateFormat = DateFormat('dd MMM, HH:mm', 'tr_TR');
     final isCreditCard = item.paymentType == PaymentType.creditCard;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Dismissible(
       key: Key(item.id),
@@ -33,11 +34,50 @@ class TransactionTile extends StatelessWidget {
         alignment: Alignment.centerRight,
         child: const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 22),
       ),
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            title: Text(
+              'Harcamayı Sil',
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                fontWeight: FontWeight.w700,
+                fontSize: 17,
+              ),
+            ),
+            content: Text(
+              '"${item.title}" kaydını silmek istediğinizden emin misiniz?',
+              style: TextStyle(
+                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                fontSize: 14,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Vazgeç'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEF4444),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('Sil'),
+              ),
+            ],
+          ),
+        );
+      },
       onDismissed: (_) => onDelete(),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: Material(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           child: InkWell(
             onTap: onTap,
@@ -46,7 +86,9 @@ class TransactionTile extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFF1F5F9)),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                ),
               ),
               child: Row(
                 children: [
@@ -56,8 +98,12 @@ class TransactionTile extends StatelessWidget {
                     height: 40,
                     decoration: BoxDecoration(
                       color: isCreditCard
-                          ? const Color(0xFFEEF2FF)
-                          : const Color(0xFFECFDF5),
+                          ? (isDark
+                              ? const Color(0xFF312E81).withValues(alpha: 0.4)
+                              : const Color(0xFFEEF2FF))
+                          : (isDark
+                              ? const Color(0xFF064E3B).withValues(alpha: 0.4)
+                              : const Color(0xFFECFDF5)),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -65,24 +111,24 @@ class TransactionTile extends StatelessWidget {
                           ? Icons.credit_card_rounded
                           : Icons.payments_rounded,
                       color: isCreditCard
-                          ? const Color(0xFF4F46E5)
-                          : const Color(0xFF059669),
+                          ? const Color(0xFF818CF8)
+                          : const Color(0xFF34D399),
                       size: 20,
                     ),
                   ),
                   const SizedBox(width: 12),
 
-                  // Başlık ve Açıklamalar (Expanded ile taşmayı önleyen korumalı alan)
+                  // Başlık ve Açıklamalar
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           item.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF0F172A),
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -95,25 +141,25 @@ class TransactionTile extends StatelessWidget {
                           children: [
                             Text(
                               item.category.title,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
-                                color: Color(0xFF64748B),
+                                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             Container(
                               width: 3,
                               height: 3,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFCBD5E1),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
                                 shape: BoxShape.circle,
                               ),
                             ),
                             Text(
                               dateFormat.format(item.date),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
-                                color: Color(0xFF94A3B8),
+                                color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
                               ),
                             ),
                           ],
@@ -122,10 +168,10 @@ class TransactionTile extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             item.note!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               fontStyle: FontStyle.italic,
-                              color: Color(0xFF94A3B8),
+                              color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -144,10 +190,10 @@ class TransactionTile extends StatelessWidget {
                     children: [
                       Text(
                         currencyFormat.format(item.amount),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -158,8 +204,12 @@ class TransactionTile extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: isCreditCard
-                              ? const Color(0xFFEEF2FF)
-                              : const Color(0xFFECFDF5),
+                              ? (isDark
+                                  ? const Color(0xFF312E81).withValues(alpha: 0.5)
+                                  : const Color(0xFFEEF2FF))
+                              : (isDark
+                                  ? const Color(0xFF064E3B).withValues(alpha: 0.5)
+                                  : const Color(0xFFECFDF5)),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -168,8 +218,8 @@ class TransactionTile extends StatelessWidget {
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: isCreditCard
-                                ? const Color(0xFF4338CA)
-                                : const Color(0xFF047857),
+                                ? const Color(0xFFA5B4FC)
+                                : const Color(0xFF6EE7B7),
                           ),
                         ),
                       ),

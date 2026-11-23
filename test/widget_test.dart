@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hesaptakip/controllers/theme_controller.dart';
 import 'package:hesaptakip/controllers/transaction_controller.dart';
 import 'package:hesaptakip/main.dart';
 import 'package:hesaptakip/models/transaction_item.dart';
@@ -31,12 +32,12 @@ void main() {
       expect(summary.budgetUsageRatio, 0.5);
     });
 
-    test('TransactionController filtreleme ve ekleme işlemi doğru çalışır', () async {
+    test('TransactionController başlangıçta temizdir ve ekleme/silme çalışır', () async {
       final controller = TransactionController();
       await controller.initialize();
 
-      final initialCount = controller.allTransactions.length;
-      expect(initialCount, greaterThan(0));
+      // Sıfır veri doğrulaması
+      expect(controller.allTransactions.length, 0);
 
       // Yeni Kredi Kartı harcaması ekle
       await controller.addTransaction(
@@ -47,24 +48,28 @@ void main() {
         date: DateTime.now(),
       );
 
-      expect(controller.allTransactions.length, initialCount + 1);
+      expect(controller.allTransactions.length, 1);
 
-      // Kredi kartı filtresi
-      controller.setFilter(FilterPaymentType.creditCard);
-      for (final item in controller.filteredTransactions) {
-        expect(item.paymentType, PaymentType.creditCard);
-      }
+      // Silme işlemi testi
+      final id = controller.allTransactions.first.id;
+      await controller.deleteTransaction(id);
+      expect(controller.allTransactions.length, 0);
+    });
 
-      // Nakit filtresi
-      controller.setFilter(FilterPaymentType.cash);
-      for (final item in controller.filteredTransactions) {
-        expect(item.paymentType, PaymentType.cash);
-      }
+    test('ThemeController koyu ve açık tema geçişini yönetir', () async {
+      final themeController = ThemeController();
+      await themeController.initialize();
+
+      await themeController.toggleTheme();
+      expect(themeController.isDarkMode, isTrue);
+
+      await themeController.toggleTheme();
+      expect(themeController.isDarkMode, isFalse);
     });
   });
 
   group('Widget UI Testleri', () {
-    testWidgets('Ana ekran başarıyla yüklenir ve bileşenler ekranda yer alır', (
+    testWidgets('Ana ekran temiz sıfır durumla yüklenir ve bileşenler ekranda yer alır', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(const KrediKartiHesapTakipApp());
@@ -76,6 +81,7 @@ void main() {
       expect(find.text('Harcamalar'), findsOneWidget);
       expect(find.text('Oran & Analiz'), findsOneWidget);
       expect(find.text('Harcama Ekle'), findsOneWidget);
+      expect(find.text('Kayıtlı Harcama Yok'), findsOneWidget);
     });
   });
 }

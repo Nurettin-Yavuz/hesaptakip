@@ -14,6 +14,7 @@ class AnalyticsView extends StatelessWidget {
     final summary = controller.summary;
     final categoryMap = controller.categoryDistribution;
     final currencyFormat = NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -25,35 +26,54 @@ class AnalyticsView extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? const Color(0xFF1E293B) : Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(
+                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Ödeme Türü Karşılaştırması',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF0F172A),
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   'Tüm harcamalarınızın Kredi Kartı ve Nakit oran dağılımı.',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey.shade600,
+                    color: isDark ? const Color(0xFF94A3B8) : Colors.grey.shade600,
                   ),
                 ),
                 const SizedBox(height: 24),
                 if (summary.grandTotal == 0)
-                  const Center(
+                  Center(
                     child: Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: Text('Henüz analiz edilecek veri bulunmuyor.'),
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.pie_chart_outline_rounded,
+                            size: 48,
+                            color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Henüz analiz edilecek harcama yok.\nHarcama ekledikçe grafik otomatik oluşacaktır.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   )
                 else ...[
@@ -65,7 +85,7 @@ class AnalyticsView extends StatelessWidget {
                         centerSpaceRadius: 50,
                         sections: [
                           PieChartSectionData(
-                            color: const Color(0xFF4F46E5),
+                            color: const Color(0xFF6366F1),
                             value: summary.creditCardTotal,
                             title: '%${summary.creditCardRatio.toStringAsFixed(1)}',
                             radius: 40,
@@ -95,15 +115,17 @@ class AnalyticsView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _buildLegend(
-                        color: const Color(0xFF4F46E5),
+                        color: const Color(0xFF6366F1),
                         label: 'Kredi Kartı',
                         amount: currencyFormat.format(summary.creditCardTotal),
+                        isDark: isDark,
                       ),
                       const SizedBox(width: 24),
                       _buildLegend(
                         color: const Color(0xFF10B981),
                         label: 'Nakit',
                         amount: currencyFormat.format(summary.cashTotal),
+                        isDark: isDark,
                       ),
                     ],
                   ),
@@ -112,31 +134,39 @@ class AnalyticsView extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
 
           // Kategori Bazlı Harcama Dağılımı
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? const Color(0xFF1E293B) : Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(
+                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Kategori Dağılımı',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF0F172A),
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                 ),
                 const SizedBox(height: 16),
                 if (categoryMap.isEmpty)
-                  const Text('Henüz kategori verisi bulunmuyor.')
+                  Text(
+                    'Henüz kategori verisi bulunmuyor.',
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      fontSize: 13,
+                    ),
+                  )
                 else
                   ...categoryMap.entries.map((entry) {
                     final percent = summary.grandTotal > 0
@@ -152,18 +182,18 @@ class AnalyticsView extends StatelessWidget {
                             children: [
                               Text(
                                 entry.key.title,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF334155),
+                                  color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
                                 ),
                               ),
                               Text(
                                 '${currencyFormat.format(entry.value)} (%${percent.toStringAsFixed(1)})',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF0F172A),
+                                  color: isDark ? Colors.white : const Color(0xFF0F172A),
                                 ),
                               ),
                             ],
@@ -174,7 +204,9 @@ class AnalyticsView extends StatelessWidget {
                             child: LinearProgressIndicator(
                               value: (percent / 100).clamp(0.0, 1.0),
                               minHeight: 6,
-                              backgroundColor: const Color(0xFFF1F5F9),
+                              backgroundColor: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFF1F5F9),
                               valueColor: AlwaysStoppedAnimation<Color>(
                                 _getCategoryColor(entry.key),
                               ),
@@ -196,6 +228,7 @@ class AnalyticsView extends StatelessWidget {
     required Color color,
     required String label,
     required String amount,
+    required bool isDark,
   }) {
     return Row(
       children: [
@@ -213,18 +246,18 @@ class AnalyticsView extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF64748B),
+                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
               ),
             ),
             Text(
               amount,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
               ),
             ),
           ],

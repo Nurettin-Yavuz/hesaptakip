@@ -110,6 +110,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.existingItem != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final dateFormat = DateFormat('dd MMMM yyyy, HH:mm', 'tr_TR');
 
     return Padding(
@@ -131,40 +132,36 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 children: [
                   Text(
                     isEditing ? 'Harcamayı Güncelle' : 'Yeni Harcama Ekle',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF0F172A),
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
                     ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close_rounded),
-                    color: const Color(0xFF64748B),
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
 
-              // Ödeme Türü Seçici (Kredi Kartı vs Nakit)
+              // Ödeme Türü Seçici
               Row(
                 children: [
                   Expanded(
                     child: InkWell(
                       onTap: () => setState(() => _paymentType = PaymentType.creditCard),
                       borderRadius: BorderRadius.circular(12),
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           color: _paymentType == PaymentType.creditCard
                               ? const Color(0xFF4F46E5)
-                              : const Color(0xFFF1F5F9),
+                              : (isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: _paymentType == PaymentType.creditCard
-                                ? const Color(0xFF4F46E5)
-                                : Colors.transparent,
-                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -174,7 +171,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                               size: 18,
                               color: _paymentType == PaymentType.creditCard
                                   ? Colors.white
-                                  : const Color(0xFF64748B),
+                                  : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                             ),
                             const SizedBox(width: 8),
                             Text(
@@ -184,7 +181,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                                 fontSize: 13,
                                 color: _paymentType == PaymentType.creditCard
                                     ? Colors.white
-                                    : const Color(0xFF64748B),
+                                    : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF64748B)),
                               ),
                             ),
                           ],
@@ -197,18 +194,14 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                     child: InkWell(
                       onTap: () => setState(() => _paymentType = PaymentType.cash),
                       borderRadius: BorderRadius.circular(12),
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           color: _paymentType == PaymentType.cash
                               ? const Color(0xFF059669)
-                              : const Color(0xFFF1F5F9),
+                              : (isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: _paymentType == PaymentType.cash
-                                ? const Color(0xFF059669)
-                                : Colors.transparent,
-                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -218,7 +211,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                               size: 18,
                               color: _paymentType == PaymentType.cash
                                   ? Colors.white
-                                  : const Color(0xFF64748B),
+                                  : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                             ),
                             const SizedBox(width: 8),
                             Text(
@@ -228,7 +221,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                                 fontSize: 13,
                                 color: _paymentType == PaymentType.cash
                                     ? Colors.white
-                                    : const Color(0xFF64748B),
+                                    : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF64748B)),
                               ),
                             ),
                           ],
@@ -244,12 +237,10 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
               TextFormField(
                 controller: _titleController,
                 decoration: InputDecoration(
-                  labelText: 'Harcama Başlığı / Açıklama',
+                  labelText: 'Harcama Başlığı',
                   hintText: 'Örn: Market, Akaryakıt, Kira',
                   prefixIcon: const Icon(Icons.shopping_bag_outlined),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
                 validator: (val) {
@@ -269,9 +260,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                   labelText: 'Tutar (₺)',
                   hintText: '0.00',
                   prefixIcon: const Icon(Icons.currency_lira_rounded),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
                 validator: (val) {
@@ -290,12 +279,11 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
               // Kategori Seçimi
               DropdownButtonFormField<ExpenseCategory>(
                 value: _category,
+                dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                 decoration: InputDecoration(
                   labelText: 'Kategori',
                   prefixIcon: const Icon(Icons.category_outlined),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
                 items: ExpenseCategory.values.map((cat) {
@@ -317,20 +305,32 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade400),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF475569) : Colors.grey.shade400,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today_rounded, size: 20, color: Color(0xFF64748B)),
+                      Icon(
+                        Icons.calendar_today_rounded,
+                        size: 20,
+                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           dateFormat.format(_selectedDate),
-                          style: const TextStyle(fontSize: 14, color: Color(0xFF0F172A)),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          ),
                         ),
                       ),
-                      const Icon(Icons.arrow_drop_down, color: Color(0xFF64748B)),
+                      Icon(
+                        Icons.arrow_drop_down,
+                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      ),
                     ],
                   ),
                 ),
@@ -343,11 +343,9 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 maxLines: 2,
                 decoration: InputDecoration(
                   labelText: 'Ek Not (Opsiyonel)',
-                  hintText: 'Detay veya hatırlatma',
+                  hintText: 'Detay veya açıklama',
                   prefixIcon: const Icon(Icons.edit_note_rounded),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
               ),
@@ -357,12 +355,10 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
               ElevatedButton(
                 onPressed: _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F172A),
+                  backgroundColor: const Color(0xFF4F46E5),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   elevation: 0,
                 ),
                 child: Text(

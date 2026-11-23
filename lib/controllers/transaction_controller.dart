@@ -10,7 +10,7 @@ class TransactionController extends ChangeNotifier {
   final Uuid _uuid = const Uuid();
 
   List<TransactionItem> _transactions = [];
-  double _monthlyLimit = 35000.0;
+  double _monthlyLimit = 30000.0;
   bool _isLoading = true;
   FilterPaymentType _selectedFilter = FilterPaymentType.all;
   String _searchQuery = '';
@@ -27,7 +27,6 @@ class TransactionController extends ChangeNotifier {
 
   List<TransactionItem> get filteredTransactions {
     return _transactions.where((item) {
-      // Filtreleme kontrolü
       final matchesFilter = switch (_selectedFilter) {
         FilterPaymentType.all => true,
         FilterPaymentType.creditCard =>
@@ -37,7 +36,6 @@ class TransactionController extends ChangeNotifier {
 
       if (!matchesFilter) return false;
 
-      // Arama sorgusu kontrolü
       if (_searchQuery.trim().isEmpty) return true;
       final query = _searchQuery.toLowerCase().trim();
       final titleMatch = item.title.toLowerCase().contains(query);
@@ -134,21 +132,15 @@ class TransactionController extends ChangeNotifier {
     await _storageService.saveTransactions(_transactions);
   }
 
+  Future<void> clearAllTransactions() async {
+    _transactions.clear();
+    notifyListeners();
+    await _storageService.clearAllData();
+  }
+
   Future<void> updateMonthlyLimit(double newLimit) async {
     _monthlyLimit = newLimit;
     notifyListeners();
     await _storageService.saveMonthlyLimit(newLimit);
-  }
-
-  Future<void> resetToMockData() async {
-    _isLoading = true;
-    notifyListeners();
-    _transactions = StorageService().loadTransactions() as dynamic;
-    // Yeniden yükleme
-    final service = StorageService();
-    await service.saveTransactions([]);
-    _transactions = await service.loadTransactions();
-    _isLoading = false;
-    notifyListeners();
   }
 }
