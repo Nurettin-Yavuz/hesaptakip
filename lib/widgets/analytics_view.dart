@@ -21,7 +21,93 @@ class AnalyticsView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Başlık Kartı
+          // 1. Akıllı Öngörü ve Harcama Hızı Kartı
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [const Color(0xFF312E81), const Color(0xFF1E1B4B)]
+                    : [const Color(0xFFEEF2FF), const Color(0xFFE0E7FF)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDark ? const Color(0xFF4338CA) : const Color(0xFFC7D2FE),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.auto_awesome_rounded, color: const Color(0xFF6366F1), size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Yapay Zeka & Finansal Öngörü',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : const Color(0xFF312E81),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Günlük Güvenli Harcama',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF4338CA),
+                          ),
+                        ),
+                        Text(
+                          currencyFormat.format(summary.dailySafeBudget),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? Colors.white : const Color(0xFF1E1B4B),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Ay Sonu Beklenen Toplam',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF4338CA),
+                          ),
+                        ),
+                        Text(
+                          currencyFormat.format(summary.projectedMonthEndTotal),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: summary.projectedMonthEndTotal > summary.monthlyLimit
+                                ? const Color(0xFFEF4444)
+                                : const Color(0xFF10B981),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // 2. Kredi Kartı ve Nakit Oranı (Pasta Grafiği)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -36,7 +122,7 @@ class AnalyticsView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Ödeme Türü Karşılaştırması',
+                  'Ödeme Türü Oran Dağılımı',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -45,34 +131,22 @@ class AnalyticsView extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Tüm harcamalarınızın Kredi Kartı ve Nakit oran dağılımı.',
+                  'Bu ay yapılan ödemelerin Kredi Kartı ve Nakit oranları.',
                   style: TextStyle(
                     fontSize: 13,
                     color: isDark ? const Color(0xFF94A3B8) : Colors.grey.shade600,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 if (summary.grandTotal == 0)
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.pie_chart_outline_rounded,
-                            size: 48,
-                            color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Henüz analiz edilecek harcama yok.\nHarcama ekledikçe grafik otomatik oluşacaktır.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        'Bu ay için henüz harcama bulunmuyor.',
+                        style: TextStyle(
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        ),
                       ),
                     ),
                   )
@@ -82,7 +156,7 @@ class AnalyticsView extends StatelessWidget {
                     child: PieChart(
                       PieChartData(
                         sectionsSpace: 4,
-                        centerSpaceRadius: 50,
+                        centerSpaceRadius: 45,
                         sections: [
                           PieChartSectionData(
                             color: const Color(0xFF6366F1),
@@ -90,7 +164,7 @@ class AnalyticsView extends StatelessWidget {
                             title: '%${summary.creditCardRatio.toStringAsFixed(1)}',
                             radius: 40,
                             titleStyle: const TextStyle(
-                              fontSize: 13,
+                              fontSize: 12,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                             ),
@@ -101,7 +175,7 @@ class AnalyticsView extends StatelessWidget {
                             title: '%${summary.cashRatio.toStringAsFixed(1)}',
                             radius: 40,
                             titleStyle: const TextStyle(
-                              fontSize: 13,
+                              fontSize: 12,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                             ),
@@ -120,7 +194,7 @@ class AnalyticsView extends StatelessWidget {
                         amount: currencyFormat.format(summary.creditCardTotal),
                         isDark: isDark,
                       ),
-                      const SizedBox(width: 24),
+                      const SizedBox(width: 20),
                       _buildLegend(
                         color: const Color(0xFF10B981),
                         label: 'Nakit',
@@ -134,9 +208,9 @@ class AnalyticsView extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
 
-          // Kategori Bazlı Harcama Dağılımı
+          // 3. Kategori Dağılımı ve İlerleme Çubukları
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -151,7 +225,7 @@ class AnalyticsView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Kategori Dağılımı',
+                  'Kategori Bazlı Harcama Dağılımı',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -161,10 +235,9 @@ class AnalyticsView extends StatelessWidget {
                 const SizedBox(height: 16),
                 if (categoryMap.isEmpty)
                   Text(
-                    'Henüz kategori verisi bulunmuyor.',
+                    'Henüz kategori harcaması kaydedilmedi.',
                     style: TextStyle(
                       color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                      fontSize: 13,
                     ),
                   )
                 else
@@ -219,6 +292,8 @@ class AnalyticsView extends StatelessWidget {
               ],
             ),
           ),
+
+          const SizedBox(height: 80),
         ],
       ),
     );
@@ -233,29 +308,25 @@ class AnalyticsView extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(3),
-          ),
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 6),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontSize: 11,
                 color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
               ),
             ),
             Text(
               amount,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: isDark ? Colors.white : const Color(0xFF0F172A),
               ),
@@ -282,6 +353,10 @@ class AnalyticsView extends StatelessWidget {
         return const Color(0xFFEC4899);
       case ExpenseCategory.giyim:
         return const Color(0xFF06B6D4);
+      case ExpenseCategory.egitim:
+        return const Color(0xFFF97316);
+      case ExpenseCategory.yatirim:
+        return const Color(0xFF14B8A6);
       case ExpenseCategory.diger:
         return const Color(0xFF64748B);
     }

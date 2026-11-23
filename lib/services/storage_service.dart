@@ -4,13 +4,12 @@ import '../models/transaction_item.dart';
 class StorageService {
   static const String _transactionsKey = 'app_transactions_list';
   static const String _monthlyLimitKey = 'app_monthly_budget_limit';
+  static const String _settingsKey = 'app_user_settings';
 
   Future<List<TransactionItem>> loadTransactions() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonList = prefs.getStringList(_transactionsKey);
-    if (jsonList == null) {
-      return [];
-    }
+    if (jsonList == null) return [];
 
     try {
       return jsonList
@@ -36,6 +35,22 @@ class StorageService {
   Future<void> saveMonthlyLimit(double limit) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble(_monthlyLimitKey, limit);
+  }
+
+  Future<AppSettings> loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(_settingsKey);
+    if (jsonString != null) {
+      try {
+        return AppSettings.fromJson(jsonString);
+      } catch (_) {}
+    }
+    return const AppSettings();
+  }
+
+  Future<void> saveSettings(AppSettings settings) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_settingsKey, settings.toJson());
   }
 
   Future<void> clearAllData() async {

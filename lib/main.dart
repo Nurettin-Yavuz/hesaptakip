@@ -5,7 +5,10 @@ import 'controllers/transaction_controller.dart';
 import 'models/transaction_item.dart';
 import 'widgets/add_expense_sheet.dart';
 import 'widgets/analytics_view.dart';
+import 'widgets/day_tracking_timeline.dart';
+import 'widgets/month_selector_bar.dart';
 import 'widgets/ratio_indicator_card.dart';
+import 'widgets/settings_view.dart';
 import 'widgets/transaction_tile.dart';
 
 void main() async {
@@ -45,7 +48,6 @@ class _KrediKartiHesapTakipAppState extends State<KrediKartiHesapTakipApp> {
           title: 'Hesap & Harcama Takibi',
           debugShowCheckedModeBanner: false,
           themeMode: _themeController.themeMode,
-          // Açık Tema
           theme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.light,
@@ -69,7 +71,6 @@ class _KrediKartiHesapTakipAppState extends State<KrediKartiHesapTakipApp> {
               iconTheme: IconThemeData(color: Color(0xFF0F172A)),
             ),
           ),
-          // Koyu Tema
           darkTheme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.dark,
@@ -109,9 +110,9 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> {
   late final TransactionController _controller;
-  late final TabController _tabController;
+  int _currentNavIndex = 0;
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -119,12 +120,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     super.initState();
     _controller = TransactionController();
     _controller.initialize();
-    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     _searchController.dispose();
     _controller.dispose();
     super.dispose();
@@ -149,6 +148,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             required ExpenseCategory category,
             required DateTime date,
             String? note,
+            int installmentCount = 1,
+            bool isRecurring = false,
+            String? cardName,
           }) {
             if (itemToEdit != null) {
               _controller.updateTransaction(
@@ -160,6 +162,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   category: category,
                   date: date,
                   note: note,
+                  installmentCount: installmentCount,
+                  isRecurring: isRecurring,
+                  cardName: cardName,
                 ),
               );
             } else {
@@ -170,6 +175,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 category: category,
                 date: date,
                 note: note,
+                installmentCount: installmentCount,
+                isRecurring: isRecurring,
+                cardName: cardName,
               );
             }
           },
@@ -231,45 +239,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  void _confirmClearAll() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Tüm Verileri Sıfırla'),
-        content: const Text(
-          'Eklenen tüm harcamalar kalıcı olarak silinecektir. Sıfırdan başlamak istiyor musunuz?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Vazgeç'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              _controller.clearAllTransactions();
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Tüm harcama geçmişi sıfırlandı.'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text('Tümünü Sıfırla'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -279,9 +248,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       builder: (context, _) {
         if (_controller.isLoading) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -290,109 +257,36 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Harcama & Oran Takibi'),
+            title: const Text('Harcama & Bütçe'),
             actions: [
-              // Tema Değiştirme Butonu (Güneş / Ay Mikro-Animasyonu)
               IconButton(
                 tooltip: isDark ? 'Açık Temaya Geç' : 'Koyu Temaya Geç',
                 onPressed: () => widget.themeController.toggleTheme(),
-                icon: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (child, anim) => RotationTransition(
-                    turns: anim,
-                    child: FadeTransition(opacity: anim, child: child),
-                  ),
-                  child: Icon(
-                    isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                    key: ValueKey<bool>(isDark),
-                    color: isDark ? const Color(0xFFFBBF24) : const Color(0xFF475569),
-                  ),
-                ),
-              ),
-              // Tümünü Sıfırla Menüsü
-              PopupMenuButton<String>(
                 icon: Icon(
-                  Icons.more_vert_rounded,
-                  color: isDark ? Colors.white : const Color(0xFF475569),
+                  isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                  color: isDark ? const Color(0xFFFBBF24) : const Color(0xFF475569),
                 ),
-                onSelected: (val) {
-                  if (val == 'clear') _confirmClearAll();
-                },
-                itemBuilder: (ctx) => [
-                  const PopupMenuItem(
-                    value: 'clear',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_sweep_rounded, color: Color(0xFFEF4444), size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          'Tüm Verileri Sıfırla',
-                          style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
               ),
             ],
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(48),
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  indicator: BoxDecoration(
-                    color: isDark ? const Color(0xFF334155) : Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                        blurRadius: 4,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  labelColor: isDark ? Colors.white : const Color(0xFF0F172A),
-                  unselectedLabelColor: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                  labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-                  dividerColor: Colors.transparent,
-                  tabs: const [
-                    Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.list_rounded, size: 18),
-                          SizedBox(width: 6),
-                          Text('Harcamalar'),
-                        ],
-                      ),
-                    ),
-                    Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.pie_chart_outline_rounded, size: 18),
-                          SizedBox(width: 6),
-                          Text('Oran & Analiz'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
-          body: TabBarView(
-            controller: _tabController,
+          body: IndexedStack(
+            index: _currentNavIndex,
             children: [
-              // 1. Harcama Listesi
+              // 1. Ekran: Harcamalar & 1-30 Günlük Zaman Çizelgesi
               CustomScrollView(
                 slivers: [
+                  // Ay Değiştirici ve Seçici Çubuk
+                  SliverToBoxAdapter(
+                    child: MonthSelectorBar(
+                      selectedMonth: _controller.selectedMonth,
+                      availableMonths: _controller.availableMonths,
+                      onMonthChanged: _controller.setSelectedMonth,
+                      onPrevious: _controller.previousMonth,
+                      onNext: _controller.nextMonth,
+                    ),
+                  ),
+
+                  // Oran Kartı
                   SliverToBoxAdapter(
                     child: RatioIndicatorCard(
                       summary: summary,
@@ -400,17 +294,27 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                   ),
 
+                  // 1'inden 30'una Günlük Takip
+                  SliverToBoxAdapter(
+                    child: DayTrackingTimeline(
+                      dailyMap: _controller.dailyExpenditureMap,
+                      daysInMonth: summary.daysInMonth,
+                      currentDay: summary.currentDay,
+                      monthlyLimit: summary.monthlyLimit,
+                    ),
+                  ),
+
                   // Filtre ve Arama Çubuğu
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       child: Column(
                         children: [
                           TextField(
                             controller: _searchController,
                             onChanged: _controller.setSearchQuery,
                             decoration: InputDecoration(
-                              hintText: 'Başlık, kategori veya not ara...',
+                              hintText: 'Başlık, kart, kategori veya not ara...',
                               hintStyle: TextStyle(
                                 fontSize: 13,
                                 color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
@@ -452,7 +356,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             child: Row(
                               children: [
                                 _buildFilterChip(
-                                  label: 'Tümü (${_controller.allTransactions.length})',
+                                  label: 'Tümü (${_controller.currentMonthTransactions.length})',
                                   filter: FilterPaymentType.all,
                                   isDark: isDark,
                                 ),
@@ -478,7 +382,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                   ),
 
-                  // Harcama Listesi (Animasyonlu ve Sıfır Durum Tasarımlı)
+                  // Harcama Listesi
                   if (transactions.isEmpty)
                     SliverFillRemaining(
                       hasScrollBody: false,
@@ -488,58 +392,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Container(
-                                width: 72,
-                                height: 72,
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF1E293B)
-                                      : const Color(0xFFF1F5F9),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.receipt_long_rounded,
-                                  size: 34,
-                                  color: isDark
-                                      ? const Color(0xFF64748B)
-                                      : const Color(0xFF94A3B8),
-                                ),
+                              Icon(
+                                Icons.receipt_long_rounded,
+                                size: 40,
+                                color: isDark ? const Color(0xFF475569) : const Color(0xFF94A3B8),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 12),
                               Text(
-                                'Kayıtlı Harcama Yok',
+                                'Bu Ay İçin Harcama Yok',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w700,
                                   color: isDark ? Colors.white : const Color(0xFF0F172A),
                                 ),
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Tüm harcamalarınızı Kredi Kartı ve Nakit olarak\nanında kaydetmeye başlayabilirsiniz.',
-                                textAlign: TextAlign.center,
+                                'Aşağıdaki + butonu ile ilk harcamanızı ekleyin.',
                                 style: TextStyle(
-                                  color: isDark
-                                      ? const Color(0xFF94A3B8)
-                                      : const Color(0xFF64748B),
-                                  fontSize: 13,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              ElevatedButton.icon(
-                                onPressed: () => _openAddExpenseSheet(),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4F46E5),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                icon: const Icon(Icons.add_rounded, size: 18),
-                                label: const Text(
-                                  'İlk Harcamayı Ekle',
-                                  style: TextStyle(fontWeight: FontWeight.w700),
+                                  fontSize: 12,
+                                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                                 ),
                               ),
                             ],
@@ -552,40 +424,62 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final item = transactions[index];
-                          return AnimatedOpacity(
-                            duration: const Duration(milliseconds: 300),
-                            opacity: 1.0,
-                            child: TransactionTile(
-                              item: item,
-                              onTap: () => _openAddExpenseSheet(item),
-                              onDelete: () => _controller.deleteTransaction(item.id),
-                            ),
+                          return TransactionTile(
+                            item: item,
+                            onTap: () => _openAddExpenseSheet(item),
+                            onDelete: () => _controller.deleteTransaction(item.id),
                           );
                         },
                         childCount: transactions.length,
                       ),
                     ),
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 80),
-                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 90)),
                 ],
               ),
 
-              // 2. Oran ve Analiz Tab
+              // 2. Ekran: Oranlar, Analiz & Akıllı Tahmin
               AnalyticsView(controller: _controller),
+
+              // 3. Ekran: Ayarlar, Bütçe, Kesim Günü & Dışa Aktarma
+              SettingsView(controller: _controller),
             ],
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _openAddExpenseSheet(),
-            backgroundColor: const Color(0xFF4F46E5),
-            foregroundColor: Colors.white,
-            elevation: 3,
-            icon: const Icon(Icons.add_rounded),
-            label: const Text(
-              'Harcama Ekle',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-            ),
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: _currentNavIndex,
+            onDestinationSelected: (index) => setState(() => _currentNavIndex = index),
+            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+            indicatorColor: const Color(0xFF4F46E5).withValues(alpha: 0.15),
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.list_alt_rounded),
+                selectedIcon: Icon(Icons.list_alt_rounded, color: Color(0xFF4F46E5)),
+                label: 'Harcamalar',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.pie_chart_outline_rounded),
+                selectedIcon: Icon(Icons.pie_chart_rounded, color: Color(0xFF4F46E5)),
+                label: 'Oran & Analiz',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.settings_outlined),
+                selectedIcon: Icon(Icons.settings_rounded, color: Color(0xFF4F46E5)),
+                label: 'Ayarlar',
+              ),
+            ],
           ),
+          floatingActionButton: _currentNavIndex == 0
+              ? FloatingActionButton.extended(
+                  onPressed: () => _openAddExpenseSheet(),
+                  backgroundColor: const Color(0xFF4F46E5),
+                  foregroundColor: Colors.white,
+                  elevation: 3,
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text(
+                    'Harcama Ekle',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
+                )
+              : null,
         );
       },
     );

@@ -11,6 +11,9 @@ class AddExpenseSheet extends StatefulWidget {
     required ExpenseCategory category,
     required DateTime date,
     String? note,
+    int installmentCount,
+    bool isRecurring,
+    String? cardName,
   }) onSave;
 
   const AddExpenseSheet({
@@ -28,10 +31,13 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
   late TextEditingController _titleController;
   late TextEditingController _amountController;
   late TextEditingController _noteController;
+  late TextEditingController _cardNameController;
 
   late PaymentType _paymentType;
   late ExpenseCategory _category;
   late DateTime _selectedDate;
+  int _installmentCount = 1;
+  bool _isRecurring = false;
 
   @override
   void initState() {
@@ -42,9 +48,12 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
       text: item != null ? item.amount.toStringAsFixed(2) : '',
     );
     _noteController = TextEditingController(text: item?.note ?? '');
+    _cardNameController = TextEditingController(text: item?.cardName ?? '');
     _paymentType = item?.paymentType ?? PaymentType.creditCard;
     _category = item?.category ?? ExpenseCategory.market;
     _selectedDate = item?.date ?? DateTime.now();
+    _installmentCount = item?.installmentCount ?? 1;
+    _isRecurring = item?.isRecurring ?? false;
   }
 
   @override
@@ -52,6 +61,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
     _titleController.dispose();
     _amountController.dispose();
     _noteController.dispose();
+    _cardNameController.dispose();
     super.dispose();
   }
 
@@ -101,6 +111,9 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
         category: _category,
         date: _selectedDate,
         note: _noteController.text.trim(),
+        installmentCount: _installmentCount,
+        isRecurring: _isRecurring,
+        cardName: _cardNameController.text.trim(),
       );
 
       Navigator.pop(context);
@@ -238,7 +251,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 controller: _titleController,
                 decoration: InputDecoration(
                   labelText: 'Harcama Başlığı',
-                  hintText: 'Örn: Market, Akaryakıt, Kira',
+                  hintText: 'Örn: Market, Kira, Akaryakıt',
                   prefixIcon: const Icon(Icons.shopping_bag_outlined),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -298,6 +311,50 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
               ),
               const SizedBox(height: 14),
 
+              // Kredi Kartı Ek Bilgileri (Kart Adı ve Taksit Sayısı)
+              if (_paymentType == PaymentType.creditCard) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        controller: _cardNameController,
+                        decoration: InputDecoration(
+                          labelText: 'Kart / Banka Adı',
+                          hintText: 'Örn: Bonus, Maximum',
+                          prefixIcon: const Icon(Icons.credit_card_outlined),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 1,
+                      child: DropdownButtonFormField<int>(
+                        value: _installmentCount,
+                        dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        decoration: InputDecoration(
+                          labelText: 'Taksit',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                        ),
+                        items: [1, 2, 3, 4, 6, 9, 12].map((count) {
+                          return DropdownMenuItem(
+                            value: count,
+                            child: Text(count == 1 ? 'Tek Çekim' : '$count Taksit'),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _installmentCount = val);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+              ],
+
               // Tarih Seçici
               InkWell(
                 onTap: _pickDate,
@@ -336,6 +393,15 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 ),
               ),
               const SizedBox(height: 14),
+
+              // Düzenli Sabit Ödeme Switch
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Düzenli / Aylık Sabit Ödeme', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                subtitle: const Text('Abonelik veya kira gibi her ay tekrarlanan harcama', style: TextStyle(fontSize: 11)),
+                value: _isRecurring,
+                onChanged: (val) => setState(() => _isRecurring = val),
+              ),
 
               // Not Girişi
               TextFormField(
