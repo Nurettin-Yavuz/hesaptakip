@@ -18,19 +18,21 @@ void main() {
   });
 
   group('Hesap Takip Gelişmiş Özellikler Testi', () {
-    test('BudgetSummary günlük güvenli harcama ve ay sonu tahminini hesaplar', () {
+    test('BudgetSummary günlük güvenli harcama ve MoM değişimini hesaplar', () {
       const summary = BudgetSummary(
         creditCardTotal: 6000.0,
         cashTotal: 4000.0,
         monthlyLimit: 20000.0,
         daysInMonth: 30,
         currentDay: 15,
+        previousMonthTotal: 8000.0,
       );
 
       expect(summary.grandTotal, 10000.0);
       expect(summary.remainingBudget, 10000.0);
       expect(summary.dailySafeBudget, closeTo(625.0, 1.0));
       expect(summary.projectedMonthEndTotal, closeTo(20000.0, 10.0));
+      expect(summary.monthOverMonthChangePercent, closeTo(25.0, 0.1));
     });
 
     test('Ay değiştirme ve aya göre filtreleme doğru çalışır', () async {
@@ -64,26 +66,49 @@ void main() {
       expect(controller.currentMonthTransactions.first.title, 'Geçen Ayki Harcama');
     });
 
-    test('CSV ve JSON export motoru veri üretir', () async {
+    test('Kredi Kartı Cüzdanı ve Tasarruf Hedefleri yönetimi çalışır', () async {
       final controller = TransactionController();
       await controller.initialize();
 
-      await controller.addTransaction(
-        title: 'Test Verisi',
-        amount: 250.0,
-        paymentType: PaymentType.creditCard,
-        category: ExpenseCategory.akaryakit,
-        date: DateTime.now(),
-        cardName: 'Bonus',
-        installmentCount: 3,
+      await controller.addSavingsGoal(
+        title: 'Tatil Fonu',
+        targetAmount: 10000.0,
+        initialAmount: 2000.0,
+        targetDate: DateTime.now().add(const Duration(days: 90)),
       );
 
+      expect(controller.savingsGoals.length, 1);
+      expect(controller.savingsGoals.first.title, 'Tatil Fonu');
+      expect(controller.savingsGoals.first.progressRatio, 0.2);
+
+      await controller.depositToSavingsGoal(controller.savingsGoals.first.id, 3000.0);
+      expect(controller.savingsGoals.first.currentAmount, 5000.0);
+      expect(controller.savingsGoals.first.progressRatio, 0.5);
+
+      await controller.addCreditCard(
+        cardName: 'Ziraat Platinum',
+        bankName: 'Ziraat',
+        cardLimit: 40000.0,
+        cutOffDay: 10,
+        paymentDueDay: 20,
+      );
+
+      expect(controller.creditCards.any((c) => c.cardName == 'Ziraat Platinum'), isTrue);
+    });
+
+    test('Demo verileri başarıyla yüklenir ve CSV / JSON üretilir', () async {
+      final controller = TransactionController();
+      await controller.initialize();
+      await controller.loadDemoData();
+
+      expect(controller.allTransactions.length, greaterThan(3));
+      expect(controller.savingsGoals.length, 2);
+
       final csv = controller.exportDataAsCsv();
-      expect(csv.contains('Test Verisi'), isTrue);
-      expect(csv.contains('Bonus'), isTrue);
+      expect(csv.contains('Migros Süpermarket'), isTrue);
 
       final json = controller.exportDataAsJson();
-      expect(json.contains('Test Verisi'), isTrue);
+      expect(json.contains('Migros Süpermarket'), isTrue);
     });
   });
 
@@ -103,14 +128,13 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Uygulama & Bütçe Ayarları'), findsOneWidget);
-      expect(find.text('Kredi Kartı Hesap Kesim Günü'), findsOneWidget);
-      expect(find.text('Excel / CSV Formatında İndir'), findsOneWidget);
+      expect(find.text('Hesap Kesim Günü'), findsOneWidget);
+      expect(find.text('CSV / Excel Olarak Dışa Aktar'), findsOneWidget);
     });
 
     testWidgets('Dar ekran boyutunda (360x640) Harcama Ekleme Modal penceresi açılır ve taşma oluşmaz', (
       WidgetTester tester,
     ) async {
-      // Dar ekran testi (küçük telefon ölçüsü)
       tester.view.physicalSize = const Size(360, 640);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -118,17 +142,14 @@ void main() {
       await tester.pumpWidget(const KrediKartiHesapTakipApp());
       await tester.pumpAndSettle();
 
-      // Harcama Ekle butonuna tıkla
       final addBtn = find.text('Harcama Ekle');
       expect(addBtn, findsOneWidget);
       await tester.tap(addBtn);
       await tester.pumpAndSettle();
 
-      // Modal pencerenin açıldığını ve öğelerinin yer aldığını doğrula
       expect(find.text('Yeni Harcama Ekle'), findsOneWidget);
       expect(find.text('Kredi Kartı'), findsWidgets);
       expect(find.text('Nakit'), findsWidgets);
-      expect(find.text('Banka / Kart'), findsOneWidget);
       expect(find.text('Taksit'), findsOneWidget);
     });
   });

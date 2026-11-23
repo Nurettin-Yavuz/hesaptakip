@@ -5,11 +5,13 @@ import '../models/transaction_item.dart';
 class RatioIndicatorCard extends StatelessWidget {
   final BudgetSummary summary;
   final VoidCallback onEditLimit;
+  final bool hideAmounts;
 
   const RatioIndicatorCard({
     super.key,
     required this.summary,
     required this.onEditLimit,
+    this.hideAmounts = false,
   });
 
   @override
@@ -18,6 +20,7 @@ class RatioIndicatorCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final ccRatio = summary.creditCardRatio;
     final cashRatio = summary.cashRatio;
+    final momChange = summary.monthOverMonthChangePercent;
 
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 600),
@@ -55,13 +58,40 @@ class RatioIndicatorCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Toplam Harcama',
-                        style: TextStyle(
-                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              'Toplam Harcama',
+                              style: TextStyle(
+                                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (summary.previousMonthTotal > 0) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: momChange <= 0
+                                    ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                                    : const Color(0xFFEF4444).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${momChange >= 0 ? '+' : ''}${momChange.toStringAsFixed(1)}% MoM',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  color: momChange <= 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 2),
                       TweenAnimationBuilder<double>(
@@ -70,7 +100,7 @@ class RatioIndicatorCard extends StatelessWidget {
                         tween: Tween<double>(begin: 0, end: summary.grandTotal),
                         builder: (context, val, _) {
                           return Text(
-                            currencyFormat.format(val),
+                            hideAmounts ? '₺••••' : currencyFormat.format(val),
                             style: TextStyle(
                               color: isDark ? Colors.white : const Color(0xFF0F172A),
                               fontSize: 22,
@@ -119,7 +149,7 @@ class RatioIndicatorCard extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
 
             // Oran Dağılım Başlığı
             Row(
@@ -251,7 +281,7 @@ class RatioIndicatorCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          currencyFormat.format(summary.creditCardTotal),
+                          hideAmounts ? '₺••••' : currencyFormat.format(summary.creditCardTotal),
                           style: TextStyle(
                             color: isDark ? Colors.white : const Color(0xFF1E1B4B),
                             fontSize: 13,
@@ -292,7 +322,7 @@ class RatioIndicatorCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          currencyFormat.format(summary.cashTotal),
+                          hideAmounts ? '₺••••' : currencyFormat.format(summary.cashTotal),
                           style: TextStyle(
                             color: isDark ? Colors.white : const Color(0xFF064E3B),
                             fontSize: 13,
@@ -310,36 +340,54 @@ class RatioIndicatorCard extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            // Kalan Bütçe Durumu
+            // Kalan Bütçe ve Günlük Güvenli Harcama
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
                 ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    summary.remainingBudget >= 0 ? 'Kalan Bütçe' : 'Bütçe Aşımı',
-                    style: TextStyle(
-                      color: summary.remainingBudget >= 0
-                          ? (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))
-                          : const Color(0xFFEF4444),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Icon(
+                          summary.remainingBudget >= 0
+                              ? Icons.check_circle_rounded
+                              : Icons.warning_amber_rounded,
+                          color: summary.remainingBudget >= 0
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFEF4444),
+                          size: 15,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            summary.remainingBudget >= 0 ? 'Kalan Bütçe' : 'Bütçe Aşımı',
+                            style: TextStyle(
+                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  const SizedBox(width: 6),
                   Text(
-                    currencyFormat.format(summary.remainingBudget.abs()),
+                    hideAmounts ? '₺••••' : currencyFormat.format(summary.remainingBudget.abs()),
                     style: TextStyle(
                       color: summary.remainingBudget >= 0
-                          ? (isDark ? Colors.white : const Color(0xFF0F172A))
+                          ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
                           : const Color(0xFFEF4444),
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: FontWeight.w800,
                     ),
                   ),

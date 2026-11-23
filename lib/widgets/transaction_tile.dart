@@ -8,6 +8,8 @@ class TransactionTile extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onDuplicate;
   final VoidCallback onToggleFavorite;
+  final bool isCompact;
+  final bool hideAmounts;
 
   const TransactionTile({
     super.key,
@@ -16,6 +18,8 @@ class TransactionTile extends StatelessWidget {
     required this.onDelete,
     required this.onDuplicate,
     required this.onToggleFavorite,
+    this.isCompact = false,
+    this.hideAmounts = false,
   });
 
   @override
@@ -24,6 +28,7 @@ class TransactionTile extends StatelessWidget {
     final dateFormat = DateFormat('dd MMM, HH:mm', 'tr_TR');
     final isCreditCard = item.paymentType == PaymentType.creditCard;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final displayAmount = hideAmounts ? '₺••••' : currencyFormat.format(item.amount);
 
     return Dismissible(
       key: Key(item.id),
@@ -79,17 +84,20 @@ class TransactionTile extends StatelessWidget {
       },
       onDismissed: (_) => onDelete(),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
         child: Material(
           color: isDark ? const Color(0xFF1E293B) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: isCompact ? 8 : 12,
+              ),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
                 ),
@@ -98,8 +106,8 @@ class TransactionTile extends StatelessWidget {
                 children: [
                   // İkon
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: isCompact ? 34 : 40,
+                    height: isCompact ? 34 : 40,
                     decoration: BoxDecoration(
                       color: isCreditCard
                           ? (isDark
@@ -108,7 +116,7 @@ class TransactionTile extends StatelessWidget {
                           : (isDark
                               ? const Color(0xFF064E3B).withValues(alpha: 0.4)
                               : const Color(0xFFECFDF5)),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       isCreditCard
@@ -117,10 +125,10 @@ class TransactionTile extends StatelessWidget {
                       color: isCreditCard
                           ? const Color(0xFF818CF8)
                           : const Color(0xFF34D399),
-                      size: 20,
+                      size: isCompact ? 18 : 20,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
 
                   // Başlık ve Açıklamalar
                   Expanded(
@@ -133,7 +141,7 @@ class TransactionTile extends StatelessWidget {
                               child: Text(
                                 item.title,
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: isCompact ? 13 : 14,
                                   fontWeight: FontWeight.w700,
                                   color: isDark ? Colors.white : const Color(0xFF0F172A),
                                 ),
@@ -160,10 +168,10 @@ class TransactionTile extends StatelessWidget {
                               ),
                           ],
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: 2),
                         Wrap(
                           crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 6,
+                          spacing: 5,
                           runSpacing: 2,
                           children: [
                             Text(
@@ -185,7 +193,7 @@ class TransactionTile extends StatelessWidget {
                             Text(
                               dateFormat.format(item.date),
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 10,
                                 color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
                               ),
                             ),
@@ -200,17 +208,28 @@ class TransactionTile extends StatelessWidget {
                               ),
                           ],
                         ),
-                        if (item.note != null && item.note!.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            item.note!,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontStyle: FontStyle.italic,
-                              color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        if (!isCompact && item.tags.isNotEmpty) ...[
+                          const SizedBox(height: 3),
+                          Wrap(
+                            spacing: 4,
+                            runSpacing: 2,
+                            children: item.tags.take(3).map((tag) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  tag.startsWith('#') ? tag : '#$tag',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? const Color(0xFFA5B4FC) : const Color(0xFF4F46E5),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                           ),
                         ],
                       ],
@@ -219,15 +238,15 @@ class TransactionTile extends StatelessWidget {
 
                   const SizedBox(width: 8),
 
-                  // Tutar, Kart/Tür Rozeti ve Hızlı Kopyalama
+                  // Tutar, Kart/Tür Rozeti ve Hızlı Kopyalama / Favori
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        currencyFormat.format(item.amount),
+                        displayAmount,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: isCompact ? 13 : 14,
                           fontWeight: FontWeight.w800,
                           color: isDark ? Colors.white : const Color(0xFF0F172A),
                         ),
@@ -253,12 +272,25 @@ class TransactionTile extends StatelessWidget {
                                   ? item.cardName!
                                   : item.paymentType.displayName,
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 9,
                                 fontWeight: FontWeight.w700,
                                 color: isCreditCard
                                     ? const Color(0xFFA5B4FC)
                                     : const Color(0xFF6EE7B7),
                               ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          // Favori Butonu
+                          InkWell(
+                            onTap: onToggleFavorite,
+                            borderRadius: BorderRadius.circular(4),
+                            child: Icon(
+                              item.isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
+                              size: 15,
+                              color: item.isFavorite
+                                  ? const Color(0xFFF59E0B)
+                                  : (isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8)),
                             ),
                           ),
                           const SizedBox(width: 4),

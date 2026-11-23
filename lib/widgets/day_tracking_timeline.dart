@@ -6,6 +6,8 @@ class DayTrackingTimeline extends StatelessWidget {
   final int daysInMonth;
   final int currentDay;
   final double monthlyLimit;
+  final int? selectedDay;
+  final ValueChanged<int>? onSelectDay;
 
   const DayTrackingTimeline({
     super.key,
@@ -13,6 +15,8 @@ class DayTrackingTimeline extends StatelessWidget {
     required this.daysInMonth,
     required this.currentDay,
     required this.monthlyLimit,
+    this.selectedDay,
+    this.onSelectDay,
   });
 
   @override
@@ -38,7 +42,9 @@ class DayTrackingTimeline extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  '1\'inden $daysInMonth\'ine Günlük Takip',
+                  selectedDay != null
+                      ? '$selectedDay. Gün Harcamaları Filtrelendi'
+                      : '1\'inden $daysInMonth\'ine Günlük Takip',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -48,7 +54,20 @@ class DayTrackingTimeline extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 8),
+              if (selectedDay != null) ...[
+                InkWell(
+                  onTap: () => onSelectDay?.call(selectedDay!),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text('Filtreyi Temizle', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFFEF4444))),
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -78,64 +97,76 @@ class DayTrackingTimeline extends StatelessWidget {
                 final day = index + 1;
                 final spent = dailyMap[day] ?? 0.0;
                 final isToday = day == currentDay;
+                final isSelected = day == selectedDay;
                 final hasSpent = spent > 0;
                 final barHeightRatio = maxSpent > 0 ? (spent / maxSpent).clamp(0.12, 1.0) : 0.08;
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      if (hasSpent)
-                        Text(
-                          currencyFormat.format(spent),
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                          ),
-                        )
-                      else
-                        const SizedBox(height: 12),
-                      const SizedBox(height: 4),
+                return InkWell(
+                  onTap: () => onSelectDay?.call(day),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (hasSpent)
+                          Text(
+                            currencyFormat.format(spent),
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                            ),
+                          )
+                        else
+                          const SizedBox(height: 12),
+                        const SizedBox(height: 4),
 
-                      // Harcama Sütunu
-                      Container(
-                        width: 14,
-                        height: 44 * barHeightRatio,
-                        decoration: BoxDecoration(
-                          color: hasSpent
-                              ? (isToday ? const Color(0xFF4F46E5) : const Color(0xFF818CF8))
-                              : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                          borderRadius: BorderRadius.circular(4),
-                          border: isToday
-                              ? Border.all(color: Colors.white, width: 1.5)
-                              : null,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-
-                      // Gün Numarası
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                        decoration: isToday
-                            ? BoxDecoration(
-                                color: const Color(0xFF4F46E5),
-                                borderRadius: BorderRadius.circular(4),
-                              )
-                            : null,
-                        child: Text(
-                          '$day',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
-                            color: isToday
-                                ? Colors.white
-                                : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                        // Harcama Sütunu
+                        Container(
+                          width: 14,
+                          height: 44 * barHeightRatio,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFF10B981)
+                                : (hasSpent
+                                    ? (isToday ? const Color(0xFF4F46E5) : const Color(0xFF818CF8))
+                                    : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))),
+                            borderRadius: BorderRadius.circular(4),
+                            border: isToday
+                                ? Border.all(color: Colors.white, width: 1.5)
+                                : (isSelected ? Border.all(color: const Color(0xFF10B981), width: 1.5) : null),
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 6),
+
+                        // Gün Numarası
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          decoration: isSelected
+                              ? BoxDecoration(
+                                  color: const Color(0xFF10B981),
+                                  borderRadius: BorderRadius.circular(4),
+                                )
+                              : (isToday
+                                  ? BoxDecoration(
+                                      color: const Color(0xFF4F46E5),
+                                      borderRadius: BorderRadius.circular(4),
+                                    )
+                                  : null),
+                          child: Text(
+                            '$day',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: (isToday || isSelected) ? FontWeight.w800 : FontWeight.w600,
+                              color: (isToday || isSelected)
+                                  ? Colors.white
+                                  : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },

@@ -141,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (ctx) {
         return AddExpenseSheet(
           existingItem: itemToEdit,
+          registeredCards: _controller.creditCards,
           onSave: ({
             required String title,
             required double amount,
@@ -151,6 +152,8 @@ class _HomeScreenState extends State<HomeScreen> {
             int installmentCount = 1,
             bool isRecurring = false,
             String? cardName,
+            bool isFavorite = false,
+            List<String> tags = const [],
           }) {
             if (itemToEdit != null) {
               _controller.updateTransaction(
@@ -165,6 +168,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   installmentCount: installmentCount,
                   isRecurring: isRecurring,
                   cardName: cardName,
+                  isFavorite: isFavorite,
+                  tags: tags,
                 ),
               );
             } else {
@@ -178,6 +183,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 installmentCount: installmentCount,
                 isRecurring: isRecurring,
                 cardName: cardName,
+                isFavorite: isFavorite,
+                tags: tags,
               );
             }
           },
@@ -269,6 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildSortTile('Tarihe Göre (En Eski)', SortOrder.dateAsc),
             _buildSortTile('Tutara Göre (En Yüksek)', SortOrder.amountDesc),
             _buildSortTile('Tutara Göre (En Düşük)', SortOrder.amountAsc),
+            _buildSortTile('İsme Göre (A-Z)', SortOrder.titleAsc),
           ],
         ),
       ),
@@ -308,11 +316,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final summary = _controller.summary;
         final transactions = _controller.filteredTransactions;
+        final settings = _controller.settings;
+        final favorites = _controller.favoriteTemplates;
+        final availableTags = _controller.availableTags;
 
         return Scaffold(
           appBar: AppBar(
             title: const Text('Harcama & Bütçe'),
             actions: [
+              IconButton(
+                tooltip: settings.hideSensitiveAmounts ? 'Bakiyeleri Göster' : 'Bakiyeleri Gizle',
+                onPressed: () {
+                  _controller.updateSettings(
+                    settings.copyWith(hideSensitiveAmounts: !settings.hideSensitiveAmounts),
+                  );
+                },
+                icon: Icon(
+                  settings.hideSensitiveAmounts ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                  color: settings.hideSensitiveAmounts ? const Color(0xFFEF4444) : (isDark ? Colors.white70 : Colors.black54),
+                ),
+              ),
               IconButton(
                 tooltip: 'Sırala',
                 onPressed: _showSortOptions,
@@ -345,23 +368,78 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  // Oran Kartı
+                  // Oran Kartı (Kredi Kartı vs Nakit + MoM Kıyaslama + Gizlilik Desteği)
                   SliverToBoxAdapter(
                     child: RatioIndicatorCard(
                       summary: summary,
                       onEditLimit: _showEditLimitDialog,
+                      hideAmounts: settings.hideSensitiveAmounts,
                     ),
                   ),
 
-                  // 1'inden 30'una Günlük Takip
+                  // 1'inden 30'una Günlük Takip Çizelgesi (Tıklayarak Güne Göre Filtreleme)
                   SliverToBoxAdapter(
                     child: DayTrackingTimeline(
                       dailyMap: _controller.dailyExpenditureMap,
                       daysInMonth: summary.daysInMonth,
                       currentDay: summary.currentDay,
                       monthlyLimit: summary.monthlyLimit,
+                      selectedDay: _controller.selectedDayFilter,
+                      onSelectDay: _controller.setSelectedDayFilter,
                     ),
                   ),
+
+                  // Favoriler / Sık Kullanılan Şablonlar Çubuğu (Varsa)
+                  if (favorites.isNotEmpty)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF59E0B)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Hızlı Harcama Şablonları',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            SizedBox(
+                              height: 34,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: favorites.length,
+                                itemBuilder: (ctx, i) {
+                                  final fav = favorites[i];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 6.0),
+                                    child: ActionChip(
+                                      avatar: const Icon(Icons.flash_on_rounded, size: 13, color: Color(0xFFF59E0B)),
+                                      label: Text('${fav.title} (₺${fav.amount.toStringAsFixed(0)})'),
+                                      labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                                      onPressed: () {
+                                        _controller.duplicateTransaction(fav.id);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('"${fav.title}" bugünün tarihiyle eklendi.')),
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
 
                   // Filtre ve Arama Çubuğu
                   SliverToBoxAdapter(
@@ -373,7 +451,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             controller: _searchController,
                             onChanged: _controller.setSearchQuery,
                             decoration: InputDecoration(
-                              hintText: 'Başlık, kart, kategori veya not ara...',
+                              hintText: 'Başlık, kart, kategori, #etiket veya not...',
                               hintStyle: TextStyle(
                                 fontSize: 13,
                                 color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
@@ -410,6 +488,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
+
+                          // Ödeme Türü ve Özellik Filtreleri
                           SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: Row(
@@ -442,7 +522,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ? Colors.white
                                         : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                                   ),
-                                  label: const Text('Sabitler'),
+                                  label: Text('Sabitler (${_controller.recurringTransactions.length})'),
                                   backgroundColor: _controller.showOnlyRecurring
                                       ? const Color(0xFFF59E0B)
                                       : (isDark ? const Color(0xFF1E293B) : Colors.white),
@@ -465,7 +545,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ? Colors.white
                                         : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                                   ),
-                                  label: const Text('Taksitli'),
+                                  label: Text('Taksitli (${_controller.installmentTransactions.length})'),
                                   backgroundColor: _controller.showOnlyInstallments
                                       ? const Color(0xFF6366F1)
                                       : (isDark ? const Color(0xFF1E293B) : Colors.white),
@@ -482,6 +562,30 @@ class _HomeScreenState extends State<HomeScreen> {
                               ],
                             ),
                           ),
+
+                          // Etiket Filtreleme Çubukları (Varsa)
+                          if (availableTags.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            SizedBox(
+                              height: 30,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: availableTags.map((tag) {
+                                  final isSelected = _controller.selectedTagFilter == tag;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 6.0),
+                                    child: FilterChip(
+                                      label: Text(tag, style: const TextStyle(fontSize: 11)),
+                                      selected: isSelected,
+                                      onSelected: (_) => _controller.setSelectedTagFilter(tag),
+                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -513,10 +617,22 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Aşağıdaki + butonu ile ilk harcamanızı ekleyin.',
+                                'Harcama ekleyebilir veya tek dokunuşla hazır demo verilerini yükleyebilirsiniz.',
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              ElevatedButton.icon(
+                                onPressed: () => _controller.loadDemoData(),
+                                icon: const Icon(Icons.auto_awesome_rounded, size: 16),
+                                label: const Text('Örnek Demo Verileri Yükle'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF4F46E5),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
                               ),
                             ],
@@ -535,6 +651,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             onDelete: () => _controller.deleteTransaction(item.id),
                             onDuplicate: () => _controller.duplicateTransaction(item.id),
                             onToggleFavorite: () => _controller.toggleFavorite(item.id),
+                            isCompact: settings.compactListView,
+                            hideAmounts: settings.hideSensitiveAmounts,
                           );
                         },
                         childCount: transactions.length,
@@ -544,7 +662,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
 
-              // 2. Ekran: Oranlar, Analiz & Akıllı Tahmin
+              // 2. Ekran: Oranlar, Analiz & Cüzdan & Hedefler
               AnalyticsView(controller: _controller),
 
               // 3. Ekran: Ayarlar, Bütçe, Kesim Günü & Dışa Aktarma
