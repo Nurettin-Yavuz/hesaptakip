@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hesaptakip/controllers/transaction_controller.dart';
 import 'package:hesaptakip/main.dart';
@@ -28,9 +29,7 @@ void main() {
 
       expect(summary.grandTotal, 10000.0);
       expect(summary.remainingBudget, 10000.0);
-      // Kalan 16 gün için güvenli bütçe: 10000 / 16 = 625.0
       expect(summary.dailySafeBudget, closeTo(625.0, 1.0));
-      // Günlük ortalama harcama: 10000 / 15 = 666.6
       expect(summary.projectedMonthEndTotal, closeTo(20000.0, 10.0));
     });
 
@@ -41,7 +40,6 @@ void main() {
       final now = DateTime.now();
       final lastMonth = DateTime(now.year, now.month - 1, 15);
 
-      // Bu ay için harcama
       await controller.addTransaction(
         title: 'Bu Ayki Harcama',
         amount: 500.0,
@@ -50,7 +48,6 @@ void main() {
         date: now,
       );
 
-      // Geçen ay için harcama
       await controller.addTransaction(
         title: 'Geçen Ayki Harcama',
         amount: 800.0,
@@ -59,11 +56,9 @@ void main() {
         date: lastMonth,
       );
 
-      // Başlangıçta bu ay seçili
       expect(controller.currentMonthTransactions.length, 1);
       expect(controller.currentMonthTransactions.first.title, 'Bu Ayki Harcama');
 
-      // Geçen aya geç
       controller.previousMonth();
       expect(controller.currentMonthTransactions.length, 1);
       expect(controller.currentMonthTransactions.first.title, 'Geçen Ayki Harcama');
@@ -100,18 +95,41 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Alt navigasyon etiketleri
       expect(find.text('Harcamalar'), findsWidgets);
       expect(find.text('Oran & Analiz'), findsOneWidget);
       expect(find.text('Ayarlar'), findsOneWidget);
 
-      // Ayarlar sekmesine tıkla
       await tester.tap(find.text('Ayarlar'));
       await tester.pumpAndSettle();
 
       expect(find.text('Uygulama & Bütçe Ayarları'), findsOneWidget);
       expect(find.text('Kredi Kartı Hesap Kesim Günü'), findsOneWidget);
       expect(find.text('Excel / CSV Formatında İndir'), findsOneWidget);
+    });
+
+    testWidgets('Dar ekran boyutunda (360x640) Harcama Ekleme Modal penceresi açılır ve taşma oluşmaz', (
+      WidgetTester tester,
+    ) async {
+      // Dar ekran testi (küçük telefon ölçüsü)
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(const KrediKartiHesapTakipApp());
+      await tester.pumpAndSettle();
+
+      // Harcama Ekle butonuna tıkla
+      final addBtn = find.text('Harcama Ekle');
+      expect(addBtn, findsOneWidget);
+      await tester.tap(addBtn);
+      await tester.pumpAndSettle();
+
+      // Modal pencerenin açıldığını ve öğelerinin yer aldığını doğrula
+      expect(find.text('Yeni Harcama Ekle'), findsOneWidget);
+      expect(find.text('Kredi Kartı'), findsWidgets);
+      expect(find.text('Nakit'), findsWidgets);
+      expect(find.text('Banka / Kart'), findsOneWidget);
+      expect(find.text('Taksit'), findsOneWidget);
     });
   });
 }

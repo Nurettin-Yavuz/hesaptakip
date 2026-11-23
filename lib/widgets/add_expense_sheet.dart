@@ -128,10 +128,10 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
 
     return Padding(
       padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        left: 16,
+        right: 16,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
       ),
       child: Form(
         key: _formKey,
@@ -143,22 +143,28 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    isEditing ? 'Harcamayı Güncelle' : 'Yeni Harcama Ekle',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  Expanded(
+                    child: Text(
+                      isEditing ? 'Harcamayı Güncelle' : 'Yeni Harcama Ekle',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded),
+                    icon: const Icon(Icons.close_rounded, size: 20),
                     color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // Ödeme Türü Seçici
               Row(
@@ -169,7 +175,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                       borderRadius: BorderRadius.circular(12),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
                           color: _paymentType == PaymentType.creditCard
                               ? const Color(0xFF4F46E5)
@@ -181,20 +187,23 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                           children: [
                             Icon(
                               Icons.credit_card_rounded,
-                              size: 18,
+                              size: 16,
                               color: _paymentType == PaymentType.creditCard
                                   ? Colors.white
                                   : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Kredi Kartı',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13,
-                                color: _paymentType == PaymentType.creditCard
-                                    ? Colors.white
-                                    : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF64748B)),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                'Kredi Kartı',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                  color: _paymentType == PaymentType.creditCard
+                                      ? Colors.white
+                                      : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF64748B)),
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -202,14 +211,14 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: InkWell(
                       onTap: () => setState(() => _paymentType = PaymentType.cash),
                       borderRadius: BorderRadius.circular(12),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
                           color: _paymentType == PaymentType.cash
                               ? const Color(0xFF059669)
@@ -221,20 +230,23 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                           children: [
                             Icon(
                               Icons.payments_rounded,
-                              size: 18,
+                              size: 16,
                               color: _paymentType == PaymentType.cash
                                   ? Colors.white
                                   : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Nakit',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13,
-                                color: _paymentType == PaymentType.cash
-                                    ? Colors.white
-                                    : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF64748B)),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                'Nakit',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                  color: _paymentType == PaymentType.cash
+                                      ? Colors.white
+                                      : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF64748B)),
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -244,7 +256,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Harcama Adı
               TextFormField(
@@ -252,9 +264,9 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 decoration: InputDecoration(
                   labelText: 'Harcama Başlığı',
                   hintText: 'Örn: Market, Kira, Akaryakıt',
-                  prefixIcon: const Icon(Icons.shopping_bag_outlined),
+                  prefixIcon: const Icon(Icons.shopping_bag_outlined, size: 20),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
@@ -263,7 +275,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                   return null;
                 },
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
 
               // Tutar Girişi
               TextFormField(
@@ -272,9 +284,9 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 decoration: InputDecoration(
                   labelText: 'Tutar (₺)',
                   hintText: '0.00',
-                  prefixIcon: const Icon(Icons.currency_lira_rounded),
+                  prefixIcon: const Icon(Icons.currency_lira_rounded, size: 20),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
@@ -287,62 +299,69 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                   return null;
                 },
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
 
-              // Kategori Seçimi
+              // Kategori Seçimi (isExpanded: true ile taşma önlenir)
               DropdownButtonFormField<ExpenseCategory>(
                 value: _category,
+                isExpanded: true,
                 dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                 decoration: InputDecoration(
                   labelText: 'Kategori',
-                  prefixIcon: const Icon(Icons.category_outlined),
+                  prefixIcon: const Icon(Icons.category_outlined, size: 20),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
                 items: ExpenseCategory.values.map((cat) {
                   return DropdownMenuItem(
                     value: cat,
-                    child: Text(cat.title),
+                    child: Text(cat.title, overflow: TextOverflow.ellipsis),
                   );
                 }).toList(),
                 onChanged: (val) {
                   if (val != null) setState(() => _category = val);
                 },
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
 
-              // Kredi Kartı Ek Bilgileri (Kart Adı ve Taksit Sayısı)
+              // Kredi Kartı Ek Bilgileri (Banka/Kart ve Taksit)
               if (_paymentType == PaymentType.creditCard) ...[
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      flex: 2,
+                      flex: 3,
                       child: TextFormField(
                         controller: _cardNameController,
                         decoration: InputDecoration(
-                          labelText: 'Kart / Banka Adı',
-                          hintText: 'Örn: Bonus, Maximum',
-                          prefixIcon: const Icon(Icons.credit_card_outlined),
+                          labelText: 'Banka / Kart',
+                          hintText: 'Bonus, Axess...',
+                          prefixIcon: const Icon(Icons.credit_card_outlined, size: 18),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Expanded(
-                      flex: 1,
+                      flex: 2,
                       child: DropdownButtonFormField<int>(
                         value: _installmentCount,
                         dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        isExpanded: true,
                         decoration: InputDecoration(
                           labelText: 'Taksit',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
                         ),
                         items: [1, 2, 3, 4, 6, 9, 12].map((count) {
                           return DropdownMenuItem(
                             value: count,
-                            child: Text(count == 1 ? 'Tek Çekim' : '$count Taksit'),
+                            child: Text(
+                              count == 1 ? 'Tek' : '$count Taksit',
+                              style: const TextStyle(fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           );
                         }).toList(),
                         onChanged: (val) {
@@ -352,7 +371,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
               ],
 
               // Tarih Seçici
@@ -360,7 +379,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 onTap: _pickDate,
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: isDark ? const Color(0xFF475569) : Colors.grey.shade400,
@@ -371,17 +390,18 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                     children: [
                       Icon(
                         Icons.calendar_today_rounded,
-                        size: 20,
+                        size: 18,
                         color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           dateFormat.format(_selectedDate),
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             color: isDark ? Colors.white : const Color(0xFF0F172A),
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Icon(
@@ -392,13 +412,13 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
 
               // Düzenli Sabit Ödeme Switch
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Düzenli / Aylık Sabit Ödeme', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                subtitle: const Text('Abonelik veya kira gibi her ay tekrarlanan harcama', style: TextStyle(fontSize: 11)),
+                title: const Text('Düzenli / Sabit Ödeme', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                subtitle: const Text('Kira veya abonelik gibi her ay tekrarlanır', style: TextStyle(fontSize: 11)),
                 value: _isRecurring,
                 onChanged: (val) => setState(() => _isRecurring = val),
               ),
@@ -410,12 +430,12 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 decoration: InputDecoration(
                   labelText: 'Ek Not (Opsiyonel)',
                   hintText: 'Detay veya açıklama',
-                  prefixIcon: const Icon(Icons.edit_note_rounded),
+                  prefixIcon: const Icon(Icons.edit_note_rounded, size: 20),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
 
               // Kaydet Butonu
               ElevatedButton(
@@ -423,7 +443,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4F46E5),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   elevation: 0,
                 ),
