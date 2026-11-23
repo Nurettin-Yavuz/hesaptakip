@@ -31,12 +31,13 @@ class KrediKartiHesapTakipApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           elevation: 0,
-          scrolledUnderElevation: 1,
-          iconTheme: IconThemeData(color: Color(0xFF0F172A)),
+          scrolledUnderElevation: 0,
+          centerTitle: false,
           titleTextStyle: TextStyle(
             color: Color(0xFF0F172A),
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
           ),
         ),
       ),
@@ -128,20 +129,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Aylık Limit Belirle'),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Aylık Limit Belirle',
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+        ),
         content: TextField(
           controller: textController,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Hedef Bütçe / Limit (₺)',
             hintText: 'Örn: 40000',
-            prefixIcon: Icon(Icons.currency_lira_rounded),
+            prefixIcon: const Icon(Icons.currency_lira_rounded),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Vazgeç'),
+            child: const Text('Vazgeç', style: TextStyle(color: Color(0xFF64748B))),
           ),
           ElevatedButton(
             onPressed: () {
@@ -150,6 +157,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               _controller.updateMonthlyLimit(newLimit);
               Navigator.pop(ctx);
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4F46E5),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
             child: const Text('Kaydet'),
           ),
         ],
@@ -175,23 +187,63 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Kredi Kartı Harcamaları'),
-            bottom: TabBar(
-              controller: _tabController,
-              indicatorColor: const Color(0xFF4F46E5),
-              labelColor: const Color(0xFF4F46E5),
-              unselectedLabelColor: const Color(0xFF64748B),
-              labelStyle: const TextStyle(fontWeight: FontWeight.w700),
-              tabs: const [
-                Tab(icon: Icon(Icons.list_alt_rounded), text: 'Harcama Listesi'),
-                Tab(icon: Icon(Icons.pie_chart_outline_rounded), text: 'Oran & Analiz'),
-              ],
+            title: const Text('Harcama & Oran Takibi'),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(48),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicator: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  labelColor: const Color(0xFF0F172A),
+                  unselectedLabelColor: const Color(0xFF64748B),
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  dividerColor: Colors.transparent,
+                  tabs: const [
+                    Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.list_rounded, size: 18),
+                          SizedBox(width: 6),
+                          Text('Harcamalar'),
+                        ],
+                      ),
+                    ),
+                    Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.pie_chart_outline_rounded, size: 18),
+                          SizedBox(width: 6),
+                          Text('Oran & Analiz'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
           body: TabBarView(
             controller: _tabController,
             children: [
-              // 1. Harcama Listesi Tab
+              // 1. Harcama Listesi
               CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(
@@ -204,15 +256,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   // Filtre ve Arama Çubuğu
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                       child: Column(
                         children: [
                           TextField(
                             controller: _searchController,
                             onChanged: _controller.setSearchQuery,
                             decoration: InputDecoration(
-                              hintText: 'Harcamalarda ara (başlık, kategori, not)...',
-                              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                              hintText: 'Başlık, kategori veya not ara...',
+                              hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                              prefixIcon: const Icon(Icons.search_rounded, size: 20, color: Color(0xFF94A3B8)),
                               suffixIcon: _searchController.text.isNotEmpty
                                   ? IconButton(
                                       icon: const Icon(Icons.clear, size: 18),
@@ -224,18 +277,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   : null,
                               filled: true,
                               fillColor: Colors.white,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 8),
                           SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: Row(
@@ -244,15 +297,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   label: 'Tümü (${_controller.allTransactions.length})',
                                   filter: FilterPaymentType.all,
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 6),
                                 _buildFilterChip(
-                                  label: 'Yalnızca Kredi Kartı',
+                                  label: 'Kredi Kartı',
                                   filter: FilterPaymentType.creditCard,
                                   icon: Icons.credit_card_rounded,
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 6),
                                 _buildFilterChip(
-                                  label: 'Yalnızca Nakit',
+                                  label: 'Nakit',
                                   filter: FilterPaymentType.cash,
                                   icon: Icons.payments_rounded,
                                 ),
@@ -272,11 +325,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         child: Padding(
                           padding: EdgeInsets.all(32.0),
                           child: Text(
-                            'Kayıtlı harcama bulunamadı.\nSağ alttaki + butonuyla yeni ekleyebilirsiniz.',
+                            'Kayıtlı harcama bulunamadı.\nSağ alttaki butondan yeni harcama ekleyebilirsiniz.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Color(0xFF94A3B8),
-                              fontSize: 14,
+                              fontSize: 13,
                             ),
                           ),
                         ),
@@ -310,10 +363,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             onPressed: () => _openAddExpenseSheet(),
             backgroundColor: const Color(0xFF4F46E5),
             foregroundColor: Colors.white,
+            elevation: 2,
             icon: const Icon(Icons.add_rounded),
             label: const Text(
               'Harcama Ekle',
-              style: TextStyle(fontWeight: FontWeight.w700),
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
             ),
           ),
         );
@@ -333,7 +387,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       avatar: icon != null
           ? Icon(
               icon,
-              size: 16,
+              size: 15,
               color: isSelected ? Colors.white : const Color(0xFF64748B),
             )
           : null,
@@ -343,10 +397,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         fontWeight: FontWeight.w600,
         color: isSelected ? Colors.white : const Color(0xFF475569),
       ),
-      selectedColor: const Color(0xFF0F172A),
+      selectedColor: const Color(0xFF4F46E5),
       backgroundColor: Colors.white,
       side: BorderSide(
-        color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFE2E8F0),
+        color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFE2E8F0),
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );

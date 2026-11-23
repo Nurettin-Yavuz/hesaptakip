@@ -71,9 +71,9 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.text('Kredi Kartı Harcamaları'), findsOneWidget);
+      expect(find.text('Harcama & Oran Takibi'), findsOneWidget);
       expect(find.text('Toplam Harcama'), findsOneWidget);
-      expect(find.text('Harcama Listesi'), findsOneWidget);
+      expect(find.text('Harcamalar'), findsOneWidget);
       expect(find.text('Oran & Analiz'), findsOneWidget);
       expect(find.text('Harcama Ekle'), findsOneWidget);
     });
