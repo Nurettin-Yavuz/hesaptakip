@@ -50,6 +50,8 @@ class TransactionItem {
   final int installmentCount; // 1: Tek çekim, >1: Taksitli
   final bool isRecurring;     // Düzenli/Aylık sabit ödeme mi?
   final String? cardName;     // Hangi kart veya hesap? (Örn: Bonus, Maximum, Ziraat)
+  final bool isFavorite;      // Sık kullanılan şablon harcama
+  final String? receiptPath;   // Fiş / Fatura görsel veya dokümanı
 
   const TransactionItem({
     required this.id,
@@ -62,7 +64,39 @@ class TransactionItem {
     this.installmentCount = 1,
     this.isRecurring = false,
     this.cardName,
+    this.isFavorite = false,
+    this.receiptPath,
   });
+
+  TransactionItem copyWith({
+    String? id,
+    String? title,
+    double? amount,
+    PaymentType? paymentType,
+    ExpenseCategory? category,
+    DateTime? date,
+    String? note,
+    int? installmentCount,
+    bool? isRecurring,
+    String? cardName,
+    bool? isFavorite,
+    String? receiptPath,
+  }) {
+    return TransactionItem(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      amount: amount ?? this.amount,
+      paymentType: paymentType ?? this.paymentType,
+      category: category ?? this.category,
+      date: date ?? this.date,
+      note: note ?? this.note,
+      installmentCount: installmentCount ?? this.installmentCount,
+      isRecurring: isRecurring ?? this.isRecurring,
+      cardName: cardName ?? this.cardName,
+      isFavorite: isFavorite ?? this.isFavorite,
+      receiptPath: receiptPath ?? this.receiptPath,
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -76,6 +110,8 @@ class TransactionItem {
       'installmentCount': installmentCount,
       'isRecurring': isRecurring,
       'cardName': cardName,
+      'isFavorite': isFavorite,
+      'receiptPath': receiptPath,
     };
   }
 
@@ -94,6 +130,8 @@ class TransactionItem {
       installmentCount: (map['installmentCount'] as num?)?.toInt() ?? 1,
       isRecurring: map['isRecurring'] as bool? ?? false,
       cardName: map['cardName'] as String?,
+      isFavorite: map['isFavorite'] as bool? ?? false,
+      receiptPath: map['receiptPath'] as String?,
     );
   }
 
@@ -109,6 +147,7 @@ class AppSettings {
   final double defaultMonthlyLimit;
   final bool enableDailyReminders;
   final bool hideSensitiveAmounts; // Gizlilik Modu (Tutarları *** yap)
+  final double budgetAlertThreshold; // Bütçe % kaç aşılınca uyarsın? (Örn: %80)
 
   const AppSettings({
     this.currencySymbol = '₺',
@@ -116,6 +155,7 @@ class AppSettings {
     this.defaultMonthlyLimit = 30000.0,
     this.enableDailyReminders = true,
     this.hideSensitiveAmounts = false,
+    this.budgetAlertThreshold = 80.0,
   });
 
   Map<String, dynamic> toMap() => {
@@ -124,6 +164,7 @@ class AppSettings {
     'defaultMonthlyLimit': defaultMonthlyLimit,
     'enableDailyReminders': enableDailyReminders,
     'hideSensitiveAmounts': hideSensitiveAmounts,
+    'budgetAlertThreshold': budgetAlertThreshold,
   };
 
   factory AppSettings.fromMap(Map<String, dynamic> map) => AppSettings(
@@ -132,6 +173,7 @@ class AppSettings {
     defaultMonthlyLimit: (map['defaultMonthlyLimit'] as num?)?.toDouble() ?? 30000.0,
     enableDailyReminders: map['enableDailyReminders'] as bool? ?? true,
     hideSensitiveAmounts: map['hideSensitiveAmounts'] as bool? ?? false,
+    budgetAlertThreshold: (map['budgetAlertThreshold'] as num?)?.toDouble() ?? 80.0,
   );
 
   String toJson() => json.encode(toMap());
@@ -145,6 +187,7 @@ class AppSettings {
     double? defaultMonthlyLimit,
     bool? enableDailyReminders,
     bool? hideSensitiveAmounts,
+    double? budgetAlertThreshold,
   }) {
     return AppSettings(
       currencySymbol: currencySymbol ?? this.currencySymbol,
@@ -152,6 +195,7 @@ class AppSettings {
       defaultMonthlyLimit: defaultMonthlyLimit ?? this.defaultMonthlyLimit,
       enableDailyReminders: enableDailyReminders ?? this.enableDailyReminders,
       hideSensitiveAmounts: hideSensitiveAmounts ?? this.hideSensitiveAmounts,
+      budgetAlertThreshold: budgetAlertThreshold ?? this.budgetAlertThreshold,
     );
   }
 }
@@ -199,4 +243,10 @@ class BudgetSummary {
 
   // Ay Sonu Tahmini Harcama Projeksiyonu
   double get projectedMonthEndTotal => dailyAverageSpent * daysInMonth;
+
+  // Bütçe Uyarı Seviyesi Kontrolü
+  bool isAlertTriggered(double thresholdPercent) {
+    if (monthlyLimit <= 0) return false;
+    return (grandTotal / monthlyLimit) * 100 >= thresholdPercent;
+  }
 }

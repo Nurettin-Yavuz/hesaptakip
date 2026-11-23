@@ -239,6 +239,60 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showSortOptions() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Sıralama Ölçütü',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildSortTile('Tarihe Göre (En Yeni)', SortOrder.dateDesc),
+            _buildSortTile('Tarihe Göre (En Eski)', SortOrder.dateAsc),
+            _buildSortTile('Tutara Göre (En Yüksek)', SortOrder.amountDesc),
+            _buildSortTile('Tutara Göre (En Düşük)', SortOrder.amountAsc),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortTile(String label, SortOrder order) {
+    final isSelected = _controller.currentSortOrder == order;
+    return ListTile(
+      title: Text(
+        label,
+        style: TextStyle(
+          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+          color: isSelected ? const Color(0xFF4F46E5) : null,
+        ),
+      ),
+      trailing: isSelected ? const Icon(Icons.check_rounded, color: Color(0xFF4F46E5)) : null,
+      onTap: () {
+        _controller.setSortOrder(order);
+        Navigator.pop(context);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -259,6 +313,11 @@ class _HomeScreenState extends State<HomeScreen> {
           appBar: AppBar(
             title: const Text('Harcama & Bütçe'),
             actions: [
+              IconButton(
+                tooltip: 'Sırala',
+                onPressed: _showSortOptions,
+                icon: const Icon(Icons.sort_rounded),
+              ),
               IconButton(
                 tooltip: isDark ? 'Açık Temaya Geç' : 'Koyu Temaya Geç',
                 onPressed: () => widget.themeController.toggleTheme(),
@@ -374,6 +433,52 @@ class _HomeScreenState extends State<HomeScreen> {
                                   icon: Icons.payments_rounded,
                                   isDark: isDark,
                                 ),
+                                const SizedBox(width: 6),
+                                ActionChip(
+                                  avatar: Icon(
+                                    Icons.repeat_rounded,
+                                    size: 15,
+                                    color: _controller.showOnlyRecurring
+                                        ? Colors.white
+                                        : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                                  ),
+                                  label: const Text('Sabitler'),
+                                  backgroundColor: _controller.showOnlyRecurring
+                                      ? const Color(0xFFF59E0B)
+                                      : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                                  labelStyle: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: _controller.showOnlyRecurring
+                                        ? Colors.white
+                                        : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+                                  ),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  onPressed: _controller.toggleOnlyRecurring,
+                                ),
+                                const SizedBox(width: 6),
+                                ActionChip(
+                                  avatar: Icon(
+                                    Icons.pie_chart_outline_rounded,
+                                    size: 15,
+                                    color: _controller.showOnlyInstallments
+                                        ? Colors.white
+                                        : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                                  ),
+                                  label: const Text('Taksitli'),
+                                  backgroundColor: _controller.showOnlyInstallments
+                                      ? const Color(0xFF6366F1)
+                                      : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                                  labelStyle: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: _controller.showOnlyInstallments
+                                        ? Colors.white
+                                        : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+                                  ),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  onPressed: _controller.toggleOnlyInstallments,
+                                ),
                               ],
                             ),
                           ),
@@ -428,6 +533,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             item: item,
                             onTap: () => _openAddExpenseSheet(item),
                             onDelete: () => _controller.deleteTransaction(item.id),
+                            onDuplicate: () => _controller.duplicateTransaction(item.id),
+                            onToggleFavorite: () => _controller.toggleFavorite(item.id),
                           );
                         },
                         childCount: transactions.length,

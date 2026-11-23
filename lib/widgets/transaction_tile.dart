@@ -6,12 +6,16 @@ class TransactionTile extends StatelessWidget {
   final TransactionItem item;
   final VoidCallback onTap;
   final VoidCallback onDelete;
+  final VoidCallback onDuplicate;
+  final VoidCallback onToggleFavorite;
 
   const TransactionTile({
     super.key,
     required this.item,
     required this.onTap,
     required this.onDelete,
+    required this.onDuplicate,
+    required this.onToggleFavorite,
   });
 
   @override
@@ -123,15 +127,38 @@ class TransactionTile extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          item.title,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: isDark ? Colors.white : const Color(0xFF0F172A),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                item.title,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (item.isRecurring)
+                              Container(
+                                margin: const EdgeInsets.only(left: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  'Sabit',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFF59E0B),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                         const SizedBox(height: 3),
                         Wrap(
@@ -162,6 +189,15 @@ class TransactionTile extends StatelessWidget {
                                 color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
                               ),
                             ),
+                            if (item.installmentCount > 1)
+                              Text(
+                                '${item.installmentCount} Taksit',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF6366F1),
+                                ),
+                              ),
                           ],
                         ),
                         if (item.note != null && item.note!.isNotEmpty) ...[
@@ -183,7 +219,7 @@ class TransactionTile extends StatelessWidget {
 
                   const SizedBox(width: 8),
 
-                  // Tutar ve Rozet
+                  // Tutar, Kart/Tür Rozeti ve Hızlı Kopyalama
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisSize: MainAxisSize.min,
@@ -197,31 +233,46 @@ class TransactionTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 3),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isCreditCard
-                              ? (isDark
-                                  ? const Color(0xFF312E81).withValues(alpha: 0.5)
-                                  : const Color(0xFFEEF2FF))
-                              : (isDark
-                                  ? const Color(0xFF064E3B).withValues(alpha: 0.5)
-                                  : const Color(0xFFECFDF5)),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          item.paymentType.displayName,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: isCreditCard
-                                ? const Color(0xFFA5B4FC)
-                                : const Color(0xFF6EE7B7),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: isCreditCard
+                                  ? (isDark
+                                      ? const Color(0xFF312E81).withValues(alpha: 0.5)
+                                      : const Color(0xFFEEF2FF))
+                                  : (isDark
+                                      ? const Color(0xFF064E3B).withValues(alpha: 0.5)
+                                      : const Color(0xFFECFDF5)),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              item.cardName?.isNotEmpty == true
+                                  ? item.cardName!
+                                  : item.paymentType.displayName,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: isCreditCard
+                                    ? const Color(0xFFA5B4FC)
+                                    : const Color(0xFF6EE7B7),
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 4),
+                          // Hızlı Kopyala Butonu
+                          InkWell(
+                            onTap: onDuplicate,
+                            borderRadius: BorderRadius.circular(4),
+                            child: Icon(
+                              Icons.copy_rounded,
+                              size: 14,
+                              color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

@@ -6,6 +6,7 @@ import '../models/transaction_item.dart';
 import '../services/storage_service.dart';
 
 enum FilterPaymentType { all, creditCard, cash }
+enum SortOrder { dateDesc, dateAsc, amountDesc, amountAsc }
 
 class TransactionController extends ChangeNotifier {
   final StorageService _storageService;
@@ -19,6 +20,9 @@ class TransactionController extends ChangeNotifier {
   FilterPaymentType _selectedFilter = FilterPaymentType.all;
   String _searchQuery = '';
   ExpenseCategory? _selectedCategoryFilter;
+  SortOrder _currentSortOrder = SortOrder.dateDesc;
+  bool _showOnlyRecurring = false;
+  bool _showOnlyInstallments = false;
 
   // Seçili Ay Takibi (Ayın 1'inden son gününe kadar dinamik ay filtresi)
   DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
@@ -33,8 +37,26 @@ class TransactionController extends ChangeNotifier {
   String get searchQuery => _searchQuery;
   ExpenseCategory? get selectedCategoryFilter => _selectedCategoryFilter;
   DateTime get selectedMonth => _selectedMonth;
+  SortOrder get currentSortOrder => _currentSortOrder;
+  bool get showOnlyRecurring => _showOnlyRecurring;
+  bool get showOnlyInstallments => _showOnlyInstallments;
 
   List<TransactionItem> get allTransactions => List.unmodifiable(_transactions);
+
+  // Favori / Hızlı Harcama Şablonları
+  List<TransactionItem> get favoriteTemplates {
+    return _transactions.where((t) => t.isFavorite).toList();
+  }
+
+  // Aktif Taksitli Harcamalar
+  List<TransactionItem> get installmentTransactions {
+    return currentMonthTransactions.where((t) => t.installmentCount > 1).toList();
+  }
+
+  // Sabit / Tekrarlayan Harcamalar
+  List<TransactionItem> get recurringTransactions {
+    return currentMonthTransactions.where((t) => t.isRecurring).toList();
+  }
 
   // Seçili aya ait harcamalar
   List<TransactionItem> get currentMonthTransactions {
@@ -47,9 +69,9 @@ class TransactionController extends ChangeNotifier {
     }).toList();
   }
 
-  // Filtrelenmiş Harcamalar (Arama, Tür, Kategori ve Ay bazlı)
+  // Filtrelenmiş ve Sıralanmış Harcamalar
   List<TransactionItem> get filteredTransactions {
-    return currentMonthTransactions.where((item) {
+    var list = currentMonthTransactions.where((item) {
       // 1. Ödeme Türü Filtresi
       final matchesFilter = switch (_selectedFilter) {
         FilterPaymentType.all => true,
@@ -63,7 +85,11 @@ class TransactionController extends ChangeNotifier {
         return false;
       }
 
-      // 3. Arama Sorgusu
+      // 3. Taksit ve Tekrarlayan filtreleri
+      if (_showOnlyRecurring && !item.isRecurring) return false;
+      if (_showOnlyInstallments && item.installmentCount <= 1) return false;
+
+      // 4. Arama Sorgusu
       if (_searchQuery.trim().isEmpty) return true;
       final query = _searchQuery.toLowerCase().trim();
       final titleMatch = item.title.toLowerCase().contains(query);
@@ -73,6 +99,24 @@ class TransactionController extends ChangeNotifier {
 
       return titleMatch || noteMatch || cardMatch || categoryMatch;
     }).toList();
+
+    // Sıralama
+    switch (_currentSortOrder) {
+      case SortOrder.dateDesc:
+        list.sort((a, b) => b.date.compareTo(a.date));
+        break;
+      case SortOrder.dateAsc:
+        list.sort((a, b) => a.date.compareTo(b.date));
+        break;
+      case SortOrder.amountDesc:
+        list.sort((a, b) => b.amount.compareTo(a.amount));
+        break;
+      case SortOrder.amountAsc:
+        list.sort((a, b) => a.amount.compareTo(b.amount));
+        break;
+    }
+
+    return list;
   }
 
   // Bütçe Özeti (Seçili ay için)
@@ -111,6 +155,18 @@ class TransactionController extends ChangeNotifier {
     return map;
   }
 
+  // Kart / Banka Bazlı Harcama Dağılımı
+  Map<String, double> get cardDistribution {
+    final map = <String, double>{};
+    for (final item in currentMonthTransactions) {
+      if (item.paymentType == PaymentType.creditCard) {
+        final card = item.cardName?.trim().isNotEmpty == true ? item.cardName!.trim() : 'Diğer Kartlar';
+        map[card] = (map[card] ?? 0.0) + item.amount;
+      }
+    }
+    return map;
+  }
+
   // Gün Gün (1'den 30/31'e) Harcama Dağılımı
   Map<int, double> get dailyExpenditureMap {
     final daysInMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0).day;
@@ -125,17 +181,15 @@ class TransactionController extends ChangeNotifier {
     return map;
   }
 
-  // Geçmiş Ayların Listesi (Harcama kaydı bulunan veya son 12 ay)
+  // Geçmiş Ayların Listesi
   List<DateTime> get availableMonths {
     final set = <String, DateTime>{};
     final now = DateTime.now();
-    // En az son 6 ayı ekle
     for (int i = 0; i < 6; i++) {
       final m = DateTime(now.year, now.month - i, 1);
       final key = '${m.year}-${m.month}';
       set[key] = m;
     }
-    // Harcamalardan gelen ayları ekle
     for (final item in _transactions) {
       final m = DateTime(item.date.year, item.date.month, 1);
       final key = '${m.year}-${m.month}';
@@ -183,9 +237,49 @@ class TransactionController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setSortOrder(SortOrder order) {
+    _currentSortOrder = order;
+    notifyListeners();
+  }
+
+  void toggleOnlyRecurring() {
+    _showOnlyRecurring = !_showOnlyRecurring;
+    notifyListeners();
+  }
+
+  void toggleOnlyInstallments() {
+    _showOnlyInstallments = !_showOnlyInstallments;
+    notifyListeners();
+  }
+
   void setSearchQuery(String query) {
     _searchQuery = query;
     notifyListeners();
+  }
+
+  Future<void> toggleFavorite(String id) async {
+    final index = _transactions.indexWhere((e) => e.id == id);
+    if (index != -1) {
+      final current = _transactions[index];
+      _transactions[index] = current.copyWith(isFavorite: !current.isFavorite);
+      notifyListeners();
+      await _storageService.saveTransactions(_transactions);
+    }
+  }
+
+  Future<void> duplicateTransaction(String id) async {
+    final item = _transactions.firstWhere((e) => e.id == id);
+    await addTransaction(
+      title: '${item.title} (Kopya)',
+      amount: item.amount,
+      paymentType: item.paymentType,
+      category: item.category,
+      date: DateTime.now(),
+      note: item.note,
+      installmentCount: item.installmentCount,
+      isRecurring: item.isRecurring,
+      cardName: item.cardName,
+    );
   }
 
   Future<void> addTransaction({
@@ -198,6 +292,7 @@ class TransactionController extends ChangeNotifier {
     int installmentCount = 1,
     bool isRecurring = false,
     String? cardName,
+    bool isFavorite = false,
   }) async {
     final newItem = TransactionItem(
       id: _uuid.v4(),
@@ -210,6 +305,7 @@ class TransactionController extends ChangeNotifier {
       installmentCount: installmentCount,
       isRecurring: isRecurring,
       cardName: cardName?.trim().isEmpty == true ? null : cardName?.trim(),
+      isFavorite: isFavorite,
     );
 
     _transactions.insert(0, newItem);
@@ -266,11 +362,11 @@ class TransactionController extends ChangeNotifier {
   // CSV Dışa Aktarma (Excel uyumlu)
   String exportDataAsCsv() {
     final buffer = StringBuffer();
-    buffer.writeln('Tarih,Baslik,Tutar,OdemeTuru,Kategori,Taksit,Kart,Not');
+    buffer.writeln('Tarih,Baslik,Tutar,OdemeTuru,Kategori,Taksit,Kart,Sabit,Not');
     for (final item in _transactions) {
       final dateStr = DateFormat('yyyy-MM-dd HH:mm').format(item.date);
       buffer.writeln(
-        '"$dateStr","${item.title}",${item.amount},"${item.paymentType.displayName}","${item.category.title}",${item.installmentCount},"${item.cardName ?? ''}","${item.note ?? ''}"',
+        '"$dateStr","${item.title}",${item.amount},"${item.paymentType.displayName}","${item.category.title}",${item.installmentCount},"${item.cardName ?? ''}","${item.isRecurring ? 'Evet' : 'Hayir'}","${item.note ?? ''}"',
       );
     }
     return buffer.toString();
