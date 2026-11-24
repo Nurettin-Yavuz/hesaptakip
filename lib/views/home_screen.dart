@@ -4,7 +4,6 @@ import '../controllers/transaction_controller.dart';
 import '../models/transaction_item.dart';
 import '../widgets/add_expense_sheet.dart';
 import '../widgets/day_tracking_timeline.dart';
-import '../widgets/financial_pulse_card.dart';
 import '../widgets/month_selector_bar.dart';
 import '../widgets/ratio_indicator_card.dart';
 import '../widgets/transaction_tile.dart';
@@ -284,14 +283,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: RatioIndicatorCard(
                       summary: summary,
                       onEditLimit: _showEditLimitDialog,
-                      hideAmounts: settings.hideSensitiveAmounts,
-                    ),
-                  ),
-
-                  // Finansal Sağlık Skoru & Akıllı Bütçe Nabzı Kartı (Apple/Neobank Seviyesi)
-                  SliverToBoxAdapter(
-                    child: FinancialPulseCard(
-                      healthScore: _controller.financialHealth,
                       hideAmounts: settings.hideSensitiveAmounts,
                     ),
                   ),
