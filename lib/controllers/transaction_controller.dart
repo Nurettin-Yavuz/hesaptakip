@@ -321,31 +321,6 @@ class TransactionController extends ChangeNotifier {
     _savingsGoals = await _storageService.loadSavingsGoals();
     _creditCards = await _storageService.loadCreditCards();
 
-    // İlk açılışta varsayılan kartlar yoksa örnek 2 popüler kart ekle
-    if (_creditCards.isEmpty) {
-      _creditCards = [
-        const CreditCardInfo(
-          id: 'card-1',
-          cardName: 'Bonus Platinum',
-          bankName: 'Garanti BBVA',
-          cardLimit: 50000.0,
-          cutOffDay: 15,
-          paymentDueDay: 25,
-          colorHex: '10B981',
-        ),
-        const CreditCardInfo(
-          id: 'card-2',
-          cardName: 'World Eko',
-          bankName: 'Yapı Kredi',
-          cardLimit: 35000.0,
-          cutOffDay: 1,
-          paymentDueDay: 10,
-          colorHex: '4F46E5',
-        ),
-      ];
-      await _storageService.saveCreditCards(_creditCards);
-    }
-
     _isLoading = false;
     notifyListeners();
   }
@@ -581,6 +556,12 @@ class TransactionController extends ChangeNotifier {
   Future<void> clearAllTransactions() async {
     _transactions.clear();
     _savingsGoals.clear();
+    _creditCards.clear();
+    _selectedFilter = FilterPaymentType.all;
+    _selectedCategoryFilter = null;
+    _selectedDayFilter = null;
+    _selectedTagFilter = null;
+    _searchQuery = '';
     notifyListeners();
     await _storageService.clearAllData();
   }
@@ -735,9 +716,31 @@ class TransactionController extends ChangeNotifier {
       ),
     ];
 
+    _creditCards = [
+      const CreditCardInfo(
+        id: 'card-1',
+        cardName: 'Bonus Platinum',
+        bankName: 'Garanti BBVA',
+        cardLimit: 50000.0,
+        cutOffDay: 15,
+        paymentDueDay: 25,
+        colorHex: '10B981',
+      ),
+      const CreditCardInfo(
+        id: 'card-2',
+        cardName: 'World Eko',
+        bankName: 'Yapı Kredi',
+        cardLimit: 35000.0,
+        cutOffDay: 1,
+        paymentDueDay: 10,
+        colorHex: '4F46E5',
+      ),
+    ];
+
     notifyListeners();
     await _storageService.saveTransactions(_transactions);
     await _storageService.saveSavingsGoals(_savingsGoals);
+    await _storageService.saveCreditCards(_creditCards);
   }
 
   // CSV Dışa Aktarma (Excel uyumlu)

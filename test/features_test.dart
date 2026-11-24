@@ -245,6 +245,7 @@ void main() {
       await controller.clearAllTransactions();
       expect(controller.allTransactions.isEmpty, isTrue);
       expect(controller.savingsGoals.isEmpty, isTrue);
+      expect(controller.creditCards.isEmpty, isTrue);
     });
 
     test('31: Finansal Sağlık Skoru ve Akıllı Bütçe Nabzı Hesaplama Testi', () async {
