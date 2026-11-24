@@ -353,3 +353,30 @@ class BudgetSummary {
     return ((grandTotal - previousMonthTotal) / previousMonthTotal) * 100;
   }
 }
+
+enum HealthLevel {
+  critical,
+  warning,
+  balanced,
+  excellent,
+}
+
+class FinancialHealthScore {
+  final int score;
+  final HealthLevel level;
+  final String statusText;
+  final String advice;
+  final double budgetDisciplineRatio;
+  final double savingsScoreRatio;
+  final double cardDependencyRatio;
+
+  const FinancialHealthScore({
+    required this.score,
+    required this.level,
+    required this.statusText,
+    required this.advice,
+    required this.budgetDisciplineRatio,
+    required this.savingsScoreRatio,
+    required this.cardDependencyRatio,
+  });
+}

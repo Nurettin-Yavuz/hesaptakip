@@ -246,5 +246,25 @@ void main() {
       expect(controller.allTransactions.isEmpty, isTrue);
       expect(controller.savingsGoals.isEmpty, isTrue);
     });
+
+    test('31: Finansal Sağlık Skoru ve Akıllı Bütçe Nabzı Hesaplama Testi', () async {
+      final controller = TransactionController();
+      await controller.initialize();
+
+      // Sıfır harcama ve limitsiz durumda dengeli başlangıç skoru
+      final initialHealth = controller.financialHealth;
+      expect(initialHealth.score, greaterThanOrEqualTo(50));
+      expect(initialHealth.statusText.isNotEmpty, isTrue);
+      expect(initialHealth.advice.isNotEmpty, isTrue);
+
+      // Demo verileri yüklendiğinde hesaplama doğrulaması
+      await controller.loadDemoData();
+      final demoHealth = controller.financialHealth;
+      expect(demoHealth.score, inInclusiveRange(0, 100));
+      expect(demoHealth.budgetDisciplineRatio, inInclusiveRange(0.0, 1.0));
+      expect(demoHealth.savingsScoreRatio, inInclusiveRange(0.0, 1.0));
+      expect(demoHealth.cardDependencyRatio, inInclusiveRange(0.0, 1.0));
+      expect(demoHealth.level, isA<HealthLevel>());
+    });
   });
 }

@@ -753,4 +753,83 @@ class TransactionController extends ChangeNotifier {
     }
     return buffer.toString();
   }
+
+  // Finansal Sağlık Skoru ve Akıllı Nabız Göstergesi
+  FinancialHealthScore get financialHealth {
+    final s = summary;
+
+    // 1. Bütçe Disiplini (Maksimum 45 Puan)
+    double budgetScore = 45.0;
+    if (s.monthlyLimit > 0) {
+      final usage = s.grandTotal / s.monthlyLimit;
+      if (usage > 1.0) {
+        budgetScore = (45.0 - ((usage - 1.0) * 50.0)).clamp(0.0, 45.0);
+      } else {
+        final dayRatio = (s.currentDay / s.daysInMonth).clamp(0.01, 1.0);
+        if (usage <= dayRatio) {
+          budgetScore = 45.0;
+        } else {
+          budgetScore = (45.0 - ((usage - dayRatio) * 30.0)).clamp(15.0, 45.0);
+        }
+      }
+    }
+
+    // 2. Tasarruf Gücü (Maksimum 30 Puan)
+    double savingsScore = 20.0;
+    if (_savingsGoals.isNotEmpty) {
+      final avgProgress = _savingsGoals.fold<double>(
+            0.0,
+            (acc, g) => acc + g.progressRatio,
+          ) /
+          _savingsGoals.length;
+      savingsScore = (avgProgress * 30.0).clamp(5.0, 30.0);
+    }
+
+    // 3. Kredi Kartı Bağımlılığı (Maksimum 25 Puan)
+    double cardScore = 25.0;
+    if (s.grandTotal > 0) {
+      final cardRatio = s.creditCardTotal / s.grandTotal;
+      if (cardRatio > 0.85) {
+        cardScore = 10.0;
+      } else if (cardRatio > 0.65) {
+        cardScore = 18.0;
+      } else {
+        cardScore = 25.0;
+      }
+    }
+
+    final totalScore = (budgetScore + savingsScore + cardScore).round().clamp(0, 100);
+
+    final HealthLevel level;
+    final String statusText;
+    final String advice;
+
+    if (totalScore >= 85) {
+      level = HealthLevel.excellent;
+      statusText = 'Mükemmel';
+      advice = 'Bütçe disiplini ve tasarruf dengeniz tepe seviyede. Güvenli harcama sınırları içerisindesiniz.';
+    } else if (totalScore >= 65) {
+      level = HealthLevel.balanced;
+      statusText = 'Dengeli';
+      advice = 'Harcama ritminiz dengeli seyrediyor. Ay sonu limit aşımını önlemek için kredi kartı harcamalarını kontrol edin.';
+    } else if (totalScore >= 45) {
+      level = HealthLevel.warning;
+      statusText = 'Dikkat';
+      advice = 'Harcama temponuz aylık bütçe projeksiyonunun üzerinde seyrediyor. İsteğe bağlı harcamaları kısmanız önerilir.';
+    } else {
+      level = HealthLevel.critical;
+      statusText = 'Kritik Risk';
+      advice = 'Aylık bütçe limitiniz aşılma riskiyle karşı karşıya. Kredi kartı borçlanmasına ve ek taksitlere acil fren yapılmalı.';
+    }
+
+    return FinancialHealthScore(
+      score: totalScore,
+      level: level,
+      statusText: statusText,
+      advice: advice,
+      budgetDisciplineRatio: (budgetScore / 45.0).clamp(0.0, 1.0),
+      savingsScoreRatio: (savingsScore / 30.0).clamp(0.0, 1.0),
+      cardDependencyRatio: (cardScore / 25.0).clamp(0.0, 1.0),
+    );
+  }
 }
