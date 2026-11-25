@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'controllers/theme_controller.dart';
 import 'theme/app_theme.dart';
@@ -45,6 +46,16 @@ class _KrediKartiHesapTakipAppState extends State<KrediKartiHesapTakipApp> {
           themeMode: _themeController.themeMode,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
+          locale: const Locale('tr', 'TR'),
+          supportedLocales: const [
+            Locale('tr', 'TR'),
+            Locale('en', 'US'),
+          ],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           home: HomeScreen(themeController: _themeController),
         );
       },
