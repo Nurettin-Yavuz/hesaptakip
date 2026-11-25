@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'controllers/theme_controller.dart';
+import 'theme/app_theme.dart';
 import 'views/home_screen.dart';
 
 export 'views/home_screen.dart';
@@ -42,55 +43,12 @@ class _KrediKartiHesapTakipAppState extends State<KrediKartiHesapTakipApp> {
           title: 'Hesap & Harcama Takibi',
           debugShowCheckedModeBanner: false,
           themeMode: _themeController.themeMode,
-          theme: ThemeData(
-            useMaterial3: true,
-            brightness: Brightness.light,
-            scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF4F46E5),
-              brightness: Brightness.light,
-              surface: Colors.white,
-            ),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Colors.white,
-              elevation: 0,
-              scrolledUnderElevation: 0,
-              centerTitle: false,
-              titleTextStyle: TextStyle(
-                color: Color(0xFF0F172A),
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.5,
-              ),
-              iconTheme: IconThemeData(color: Color(0xFF0F172A)),
-            ),
-          ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            brightness: Brightness.dark,
-            scaffoldBackgroundColor: const Color(0xFF0F172A),
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF6366F1),
-              brightness: Brightness.dark,
-              surface: const Color(0xFF1E293B),
-            ),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF0F172A),
-              elevation: 0,
-              scrolledUnderElevation: 0,
-              centerTitle: false,
-              titleTextStyle: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.5,
-              ),
-              iconTheme: IconThemeData(color: Colors.white),
-            ),
-          ),
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
           home: HomeScreen(themeController: _themeController),
         );
       },
     );
   }
 }
+

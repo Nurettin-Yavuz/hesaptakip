@@ -1,3 +1,4 @@
+import '../theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../controllers/transaction_controller.dart';
@@ -41,7 +42,7 @@ class _SettingsViewState extends State<SettingsView> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         title: const Text('Kategori Bütçe Kotaları', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
         content: SizedBox(
           width: double.maxFinite,
@@ -101,7 +102,7 @@ class _SettingsViewState extends State<SettingsView> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         title: const Text('JSON Yedekten Geri Yükle', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -173,7 +174,7 @@ class _SettingsViewState extends State<SettingsView> {
             children: [
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.account_balance_wallet_outlined, color: Color(0xFF4F46E5)),
+                leading: const Icon(Icons.account_balance_wallet_outlined, color: AppColors.primary),
                 title: const Text('Varsayılan Aylık Bütçe', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                 subtitle: Text('Şu anki: ₺${widget.controller.monthlyLimit.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11)),
                 trailing: SizedBox(
@@ -201,7 +202,7 @@ class _SettingsViewState extends State<SettingsView> {
               const Divider(height: 16),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.category_outlined, color: Color(0xFF4F46E5)),
+                leading: const Icon(Icons.category_outlined, color: AppColors.primary),
                 title: const Text('Kategori Bütçe Kotaları', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                 subtitle: Text(
                   settings.categoryBudgets.isEmpty
@@ -215,7 +216,7 @@ class _SettingsViewState extends State<SettingsView> {
               const Divider(height: 16),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.calendar_today_outlined, color: Color(0xFF4F46E5)),
+                leading: const Icon(Icons.calendar_today_outlined, color: AppColors.primary),
                 title: const Text('Hesap Kesim Günü', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                 subtitle: const Text('Ekstre döngünüzün başladığı gün', style: TextStyle(fontSize: 11)),
                 trailing: SizedBox(
@@ -249,7 +250,7 @@ class _SettingsViewState extends State<SettingsView> {
             children: [
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                secondary: const Icon(Icons.view_compact_outlined, color: Color(0xFF4F46E5)),
+                secondary: const Icon(Icons.view_compact_outlined, color: AppColors.primary),
                 title: const Text('Kompakt Liste Modu', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                 subtitle: const Text('Harcamaları tek satırlık yoğun liste halinde göster', style: TextStyle(fontSize: 11)),
                 value: settings.compactListView,
@@ -260,7 +261,7 @@ class _SettingsViewState extends State<SettingsView> {
               const Divider(height: 16),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                secondary: const Icon(Icons.visibility_off_outlined, color: Color(0xFF4F46E5)),
+                secondary: const Icon(Icons.visibility_off_outlined, color: AppColors.primary),
                 title: const Text('Gizlilik Modu (Gizli Bakiye)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                 subtitle: const Text('Toplu alanlarda harcama tutarlarını gizle (₺••••)', style: TextStyle(fontSize: 11)),
                 value: settings.hideSensitiveAmounts,
@@ -271,7 +272,7 @@ class _SettingsViewState extends State<SettingsView> {
               const Divider(height: 16),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                secondary: const Icon(Icons.notifications_active_outlined, color: Color(0xFF4F46E5)),
+                secondary: const Icon(Icons.notifications_active_outlined, color: AppColors.primary),
                 title: const Text('Günlük Hatırlatıcı', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                 subtitle: const Text('Günün harcamalarını kaydetmeyi hatırlat', style: TextStyle(fontSize: 11)),
                 value: settings.enableDailyReminders,
@@ -365,7 +366,7 @@ class _SettingsViewState extends State<SettingsView> {
                   showDialog(
                     context: context,
                     builder: (ctx) => AlertDialog(
-                      backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                       title: const Text('Tüm Verileri Sıfırla', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w800)),
                       content: const Text('Tüm kayıtlar silinecektir. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?'),
                       actions: [
@@ -402,7 +403,7 @@ class _SettingsViewState extends State<SettingsView> {
     required List<Widget> children,
   }) {
     return Material(
-      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
       borderRadius: BorderRadius.circular(18),
       child: Container(
         width: double.infinity,
@@ -410,7 +411,7 @@ class _SettingsViewState extends State<SettingsView> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           ),
         ),
         child: Column(
@@ -421,7 +422,7 @@ class _SettingsViewState extends State<SettingsView> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
-                color: isDark ? const Color(0xFFA5B4FC) : const Color(0xFF4F46E5),
+                color: isDark ? AppColors.iceBlue : AppColors.primary,
               ),
             ),
             const SizedBox(height: 12),

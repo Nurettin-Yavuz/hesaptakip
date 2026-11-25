@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/transaction_item.dart';
+import '../theme/app_theme.dart';
 
 class AddExpenseSheet extends StatefulWidget {
   final TransactionItem? existingItem;
@@ -213,11 +214,11 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                       label: const Text('Kredi Kartı', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _paymentType == PaymentType.creditCard
-                            ? const Color(0xFF4F46E5)
-                            : (isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+                            ? AppColors.iceBlue
+                            : (isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated),
                         foregroundColor: _paymentType == PaymentType.creditCard
                             ? Colors.white
-                            : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569)),
+                            : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 11),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -232,11 +233,11 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                       label: const Text('Nakit', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _paymentType == PaymentType.cash
-                            ? const Color(0xFF10B981)
-                            : (isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+                            ? AppColors.emerald
+                            : (isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated),
                         foregroundColor: _paymentType == PaymentType.cash
                             ? Colors.white
-                            : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569)),
+                            : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 11),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -498,14 +499,15 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
               ElevatedButton(
                 onPressed: _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4F46E5),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
+                  elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
                 child: Text(
                   isEditing ? 'Değişiklikleri Kaydet' : 'Harcamayı Ekle',
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, letterSpacing: -0.3),
                 ),
               ),
             ],

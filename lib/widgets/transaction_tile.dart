@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/transaction_item.dart';
+import '../theme/app_theme.dart';
 
 class TransactionTile extends StatelessWidget {
   final TransactionItem item;
@@ -24,57 +25,65 @@ class TransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
-    final dateFormat = DateFormat('dd MMM, HH:mm', 'tr_TR');
+    final dateFormat = DateFormat('d MMM, HH:mm', 'tr_TR');
     final isCreditCard = item.paymentType == PaymentType.creditCard;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final displayAmount = hideAmounts ? '₺••••' : currencyFormat.format(item.amount);
+
+    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
+    final textMuted = isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
     return Dismissible(
       key: Key(item.id),
       direction: DismissDirection.endToStart,
       background: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-          color: const Color(0xFFEF4444),
-          borderRadius: BorderRadius.circular(16),
+          color: AppColors.crimson,
+          borderRadius: BorderRadius.circular(12),
         ),
         alignment: Alignment.centerRight,
-        child: const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 22),
+        child: const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 20),
       ),
       confirmDismiss: (direction) async {
         return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: borderColor, width: 0.8),
+            ),
             title: Text(
               'Harcamayı Sil',
               style: TextStyle(
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                color: textPrimary,
                 fontWeight: FontWeight.w700,
-                fontSize: 17,
+                fontSize: 16,
+                letterSpacing: -0.4,
               ),
             ),
             content: Text(
               '"${item.title}" kaydını silmek istediğinizden emin misiniz?',
               style: TextStyle(
-                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                fontSize: 14,
+                color: textSecondary,
+                fontSize: 13,
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Vazgeç'),
+                child: Text('Vazgeç', style: TextStyle(color: textSecondary)),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, true),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFEF4444),
+                  backgroundColor: AppColors.crimson,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 child: const Text('Sil'),
               ),
@@ -84,53 +93,44 @@ class TransactionTile extends StatelessWidget {
       },
       onDismissed: (_) => onDelete(),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
         child: Material(
-          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+          color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
           borderRadius: BorderRadius.circular(14),
           child: InkWell(
             onTap: onTap,
             borderRadius: BorderRadius.circular(14),
             child: Container(
               padding: EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: isCompact ? 8 : 12,
+                horizontal: 14,
+                vertical: isCompact ? 9 : 12,
               ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                  width: 0.7,
                 ),
               ),
               child: Row(
                 children: [
-                  // İkon
+                  // Zanaatkar Mikro Durum Göstergesi (Kaba kutu yerine zarif ikon)
                   Container(
-                    width: isCompact ? 34 : 40,
-                    height: isCompact ? 34 : 40,
+                    width: 34,
+                    height: 34,
                     decoration: BoxDecoration(
-                      color: isCreditCard
-                          ? (isDark
-                              ? const Color(0xFF312E81).withValues(alpha: 0.4)
-                              : const Color(0xFFEEF2FF))
-                          : (isDark
-                              ? const Color(0xFF064E3B).withValues(alpha: 0.4)
-                              : const Color(0xFFECFDF5)),
-                      borderRadius: BorderRadius.circular(10),
+                      color: isCreditCard ? AppColors.iceBlueMuted : AppColors.emeraldMuted,
+                      borderRadius: BorderRadius.circular(9),
                     ),
                     child: Icon(
-                      isCreditCard
-                          ? Icons.credit_card_rounded
-                          : Icons.payments_rounded,
-                      color: isCreditCard
-                          ? const Color(0xFF818CF8)
-                          : const Color(0xFF34D399),
-                      size: isCompact ? 18 : 20,
+                      isCreditCard ? Icons.credit_card_rounded : Icons.payments_rounded,
+                      color: isCreditCard ? AppColors.iceBlue : AppColors.emerald,
+                      size: 17,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
 
-                  // Başlık ve Açıklamalar
+                  // Başlık, Kategori ve Tarih
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,8 +142,9 @@ class TransactionTile extends StatelessWidget {
                                 item.title,
                                 style: TextStyle(
                                   fontSize: isCompact ? 13 : 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: -0.3,
+                                  color: textPrimary,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -151,82 +152,73 @@ class TransactionTile extends StatelessWidget {
                             ),
                             if (item.isRecurring)
                               Container(
-                                margin: const EdgeInsets.only(left: 4),
+                                margin: const EdgeInsets.only(left: 6),
                                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                                  color: AppColors.amberMuted,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: const Text(
-                                  'Sabit',
+                                  'SABİT',
                                   style: TextStyle(
-                                    fontSize: 9,
+                                    fontSize: 8.5,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFFF59E0B),
+                                    letterSpacing: 0.8,
+                                    color: AppColors.amber,
                                   ),
                                 ),
                               ),
                           ],
                         ),
-                        const SizedBox(height: 2),
-                        Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 5,
-                          runSpacing: 2,
+                        const SizedBox(height: 3),
+                        Row(
                           children: [
                             Text(
                               item.category.title,
                               style: TextStyle(
                                 fontSize: 11,
-                                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                color: textSecondary,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            Container(
-                              width: 3,
-                              height: 3,
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
-                                shape: BoxShape.circle,
-                              ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 5),
+                              child: Text('•', style: TextStyle(fontSize: 10, color: textMuted)),
                             ),
                             Text(
                               dateFormat.format(item.date),
                               style: TextStyle(
-                                fontSize: 10,
-                                color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                                fontSize: 11,
+                                color: textMuted,
                               ),
                             ),
-                            if (item.installmentCount > 1)
+                            if (item.installmentCount > 1) ...[
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 5),
+                                child: Text('•', style: TextStyle(fontSize: 10, color: textMuted)),
+                              ),
                               Text(
                                 '${item.installmentCount} Taksit',
                                 style: const TextStyle(
                                   fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF6366F1),
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.iceBlue,
                                 ),
                               ),
+                            ],
                           ],
                         ),
                         if (!isCompact && item.tags.isNotEmpty) ...[
-                          const SizedBox(height: 3),
+                          const SizedBox(height: 4),
                           Wrap(
                             spacing: 4,
-                            runSpacing: 2,
                             children: item.tags.take(3).map((tag) {
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  tag.startsWith('#') ? tag : '#$tag',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark ? const Color(0xFFA5B4FC) : const Color(0xFF4F46E5),
-                                  ),
+                              return Text(
+                                tag.startsWith('#') ? tag : '#$tag',
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: textMuted,
                                 ),
                               );
                             }).toList(),
@@ -238,34 +230,24 @@ class TransactionTile extends StatelessWidget {
 
                   const SizedBox(width: 8),
 
-                  // Tutar, Kart/Tür Rozeti ve Hızlı Kopyalama / Favori
+                  // Tutar (Tabular) ve Hızlı İşlemler
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        displayAmount,
-                        style: TextStyle(
-                          fontSize: isCompact ? 13 : 14,
-                          fontWeight: FontWeight.w800,
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
-                        ),
-                      ),
-                      const SizedBox(height: 3),
+                      // Tutar
+                      _buildAmountText(textPrimary, textMuted),
+                      const SizedBox(height: 4),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          // Kart / Ödeme Rozeti
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                             decoration: BoxDecoration(
-                              color: isCreditCard
-                                  ? (isDark
-                                      ? const Color(0xFF312E81).withValues(alpha: 0.5)
-                                      : const Color(0xFFEEF2FF))
-                                  : (isDark
-                                      ? const Color(0xFF064E3B).withValues(alpha: 0.5)
-                                      : const Color(0xFFECFDF5)),
-                              borderRadius: BorderRadius.circular(6),
+                              color: isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: borderColor, width: 0.5),
                             ),
                             child: Text(
                               item.cardName?.isNotEmpty == true
@@ -273,35 +255,31 @@ class TransactionTile extends StatelessWidget {
                                   : item.paymentType.displayName,
                               style: TextStyle(
                                 fontSize: 9,
-                                fontWeight: FontWeight.w700,
-                                color: isCreditCard
-                                    ? const Color(0xFFA5B4FC)
-                                    : const Color(0xFF6EE7B7),
+                                fontWeight: FontWeight.w600,
+                                color: textSecondary,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          // Favori Butonu
+                          const SizedBox(width: 6),
+                          // Favori
                           InkWell(
                             onTap: onToggleFavorite,
                             borderRadius: BorderRadius.circular(4),
                             child: Icon(
                               item.isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
-                              size: 15,
-                              color: item.isFavorite
-                                  ? const Color(0xFFF59E0B)
-                                  : (isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8)),
+                              size: 14,
+                              color: item.isFavorite ? AppColors.amber : textMuted,
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          // Hızlı Kopyala Butonu
+                          const SizedBox(width: 5),
+                          // Kopyala
                           InkWell(
                             onTap: onDuplicate,
                             borderRadius: BorderRadius.circular(4),
                             child: Icon(
                               Icons.copy_rounded,
-                              size: 14,
-                              color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                              size: 13,
+                              color: textMuted,
                             ),
                           ),
                         ],
@@ -313,6 +291,60 @@ class TransactionTile extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAmountText(Color textPrimary, Color textMuted) {
+    if (hideAmounts) {
+      return Text(
+        '₺••••',
+        style: TextStyle(
+          fontSize: isCompact ? 13 : 14,
+          fontWeight: FontWeight.w700,
+          color: textPrimary,
+        ),
+      );
+    }
+
+    final formatted = NumberFormat.currency(locale: 'tr_TR', symbol: '').format(item.amount).trim();
+    final parts = formatted.split(',');
+    final integerPart = parts[0];
+    final decimalPart = parts.length > 1 ? ',${parts[1]}' : ',00';
+
+    return RichText(
+      text: TextSpan(
+        style: TextStyle(
+          fontFeatures: const [FontFeature.tabularFigures()],
+          color: textPrimary,
+        ),
+        children: [
+          TextSpan(
+            text: '₺',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w400,
+              color: textMuted,
+            ),
+          ),
+          TextSpan(
+            text: integerPart,
+            style: TextStyle(
+              fontSize: isCompact ? 13 : 14,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
+              color: textPrimary,
+            ),
+          ),
+          TextSpan(
+            text: decimalPart,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w500,
+              color: textMuted,
+            ),
+          ),
+        ],
       ),
     );
   }

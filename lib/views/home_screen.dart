@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../controllers/theme_controller.dart';
 import '../controllers/transaction_controller.dart';
 import '../models/transaction_item.dart';
+import '../theme/app_theme.dart';
 import '../widgets/add_expense_sheet.dart';
 import '../widgets/day_tracking_timeline.dart';
 import '../widgets/month_selector_bar.dart';
@@ -44,9 +45,13 @@ class _HomeScreenState extends State<HomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          width: 0.8,
+        ),
       ),
       builder: (ctx) {
         return AddExpenseSheet(
@@ -112,14 +117,21 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: BorderSide(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            width: 0.8,
+          ),
+        ),
         title: Text(
           'Aylık Limit Belirle',
           style: TextStyle(
             fontWeight: FontWeight.w700,
-            fontSize: 18,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
+            fontSize: 17,
+            letterSpacing: -0.4,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
           ),
         ),
         content: TextField(
@@ -135,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Vazgeç'),
+            child: Text('Vazgeç', style: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -145,9 +157,10 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4F46E5),
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Kaydet'),
           ),
@@ -160,9 +173,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          width: 0.8,
+        ),
       ),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -176,8 +193,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 'Sıralama Ölçütü',
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.4,
+                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                 ),
               ),
             ),
@@ -194,16 +212,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSortTile(String label, SortOrder order) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = _controller.currentSortOrder == order;
     return ListTile(
       title: Text(
         label,
         style: TextStyle(
-          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-          color: isSelected ? const Color(0xFF4F46E5) : null,
+          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          color: isSelected ? AppColors.primary : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
         ),
       ),
-      trailing: isSelected ? const Icon(Icons.check_rounded, color: Color(0xFF4F46E5)) : null,
+      trailing: isSelected ? const Icon(Icons.check_rounded, color: AppColors.primary, size: 18) : null,
       onTap: () {
         _controller.setSortOrder(order);
         Navigator.pop(context);
@@ -381,18 +400,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                     )
                                   : null,
                               filled: true,
-                              fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                              fillColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                                  width: 0.8,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                                  width: 0.8,
                                 ),
                               ),
                             ),
@@ -430,20 +451,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                     size: 15,
                                     color: _controller.showOnlyRecurring
                                         ? Colors.white
-                                        : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                                        : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                   ),
                                   label: Text('Sabitler (${_controller.recurringTransactions.length})'),
                                   backgroundColor: _controller.showOnlyRecurring
-                                      ? const Color(0xFFF59E0B)
-                                      : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                                      ? AppColors.amber
+                                      : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
                                   labelStyle: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                     color: _controller.showOnlyRecurring
                                         ? Colors.white
-                                        : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+                                        : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                   ),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    side: BorderSide(
+                                      color: _controller.showOnlyRecurring
+                                          ? AppColors.amber
+                                          : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                                      width: 0.8,
+                                    ),
+                                  ),
                                   onPressed: _controller.toggleOnlyRecurring,
                                 ),
                                 const SizedBox(width: 6),
@@ -453,20 +482,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                     size: 15,
                                     color: _controller.showOnlyInstallments
                                         ? Colors.white
-                                        : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                                        : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                   ),
                                   label: Text('Taksitli (${_controller.installmentTransactions.length})'),
                                   backgroundColor: _controller.showOnlyInstallments
-                                      ? const Color(0xFF6366F1)
-                                      : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                                      ? AppColors.iceBlue
+                                      : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
                                   labelStyle: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                     color: _controller.showOnlyInstallments
                                         ? Colors.white
-                                        : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+                                        : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                   ),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    side: BorderSide(
+                                      color: _controller.showOnlyInstallments
+                                          ? AppColors.iceBlue
+                                          : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                                      width: 0.8,
+                                    ),
+                                  ),
                                   onPressed: _controller.toggleOnlyInstallments,
                                 ),
                               ],
@@ -522,7 +559,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
-                                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                                 ),
                               ),
                               const SizedBox(height: 6),
@@ -531,7 +568,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                  color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                                 ),
                               ),
                               const SizedBox(height: 14),
@@ -540,8 +577,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 icon: const Icon(Icons.auto_awesome_rounded, size: 16),
                                 label: const Text('Örnek Demo Verileri Yükle'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4F46E5),
+                                  backgroundColor: AppColors.primary,
                                   foregroundColor: Colors.white,
+                                  elevation: 0,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
                               ),
@@ -582,22 +620,22 @@ class _HomeScreenState extends State<HomeScreen> {
           bottomNavigationBar: NavigationBar(
             selectedIndex: _currentNavIndex,
             onDestinationSelected: (index) => setState(() => _currentNavIndex = index),
-            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-            indicatorColor: const Color(0xFF4F46E5).withValues(alpha: 0.15),
+            backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+            indicatorColor: AppColors.primary.withValues(alpha: 0.12),
             destinations: const [
               NavigationDestination(
                 icon: Icon(Icons.list_alt_rounded),
-                selectedIcon: Icon(Icons.list_alt_rounded, color: Color(0xFF4F46E5)),
+                selectedIcon: Icon(Icons.list_alt_rounded, color: AppColors.primary),
                 label: 'Harcamalar',
               ),
               NavigationDestination(
                 icon: Icon(Icons.pie_chart_outline_rounded),
-                selectedIcon: Icon(Icons.pie_chart_rounded, color: Color(0xFF4F46E5)),
+                selectedIcon: Icon(Icons.pie_chart_rounded, color: AppColors.primary),
                 label: 'Oran & Analiz',
               ),
               NavigationDestination(
                 icon: Icon(Icons.settings_outlined),
-                selectedIcon: Icon(Icons.settings_rounded, color: Color(0xFF4F46E5)),
+                selectedIcon: Icon(Icons.settings_rounded, color: AppColors.primary),
                 label: 'Ayarlar',
               ),
             ],
@@ -605,13 +643,14 @@ class _HomeScreenState extends State<HomeScreen> {
           floatingActionButton: _currentNavIndex == 0
               ? FloatingActionButton.extended(
                   onPressed: () => _openAddExpenseSheet(),
-                  backgroundColor: const Color(0xFF4F46E5),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  elevation: 3,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   icon: const Icon(Icons.add_rounded),
                   label: const Text(
                     'Harcama Ekle',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: -0.2),
                   ),
                 )
               : null,
@@ -636,7 +675,7 @@ class _HomeScreenState extends State<HomeScreen> {
               size: 15,
               color: isSelected
                   ? Colors.white
-                  : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                  : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
             )
           : null,
       label: Text(label),
@@ -645,14 +684,15 @@ class _HomeScreenState extends State<HomeScreen> {
         fontWeight: FontWeight.w600,
         color: isSelected
             ? Colors.white
-            : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+            : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
       ),
-      selectedColor: const Color(0xFF4F46E5),
-      backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+      selectedColor: AppColors.primary,
+      backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
       side: BorderSide(
         color: isSelected
-            ? const Color(0xFF4F46E5)
-            : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+            ? AppColors.primary
+            : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+        width: 0.8,
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );

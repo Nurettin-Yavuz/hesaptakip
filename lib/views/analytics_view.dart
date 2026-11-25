@@ -1,3 +1,4 @@
+import '../theme/app_theme.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -20,7 +21,7 @@ class AnalyticsView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         title: const Text('Yeni Kredi Kartı Ekle', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
         content: SingleChildScrollView(
           child: Column(
@@ -101,7 +102,7 @@ class AnalyticsView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         title: const Text('Yeni Tasarruf Hedefi', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
         content: SingleChildScrollView(
           child: Column(
@@ -159,7 +160,7 @@ class AnalyticsView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         title: Text('${goal.title} İçin Birikim Ekle', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
         content: TextField(
           controller: amountCtrl,
@@ -301,10 +302,10 @@ class AnalyticsView extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+              color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),
             ),
             child: Column(
@@ -315,7 +316,7 @@ class AnalyticsView extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.wallet_rounded, color: Color(0xFF4F46E5), size: 18),
+                        const Icon(Icons.wallet_rounded, color: AppColors.primary, size: 18),
                         const SizedBox(width: 8),
                         Text(
                           'Kredi Kartı Cüzdanım (${controller.creditCards.length})',
@@ -332,14 +333,14 @@ class AnalyticsView extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4F46E5).withValues(alpha: 0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.add, size: 14, color: Color(0xFF4F46E5)),
+                            Icon(Icons.add, size: 14, color: AppColors.primary),
                             SizedBox(width: 4),
-                            Text('Kart Ekle', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF4F46E5))),
+                            Text('Kart Ekle', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary)),
                           ],
                         ),
                       ),
@@ -365,7 +366,7 @@ class AnalyticsView extends StatelessWidget {
                         color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                         ),
                       ),
                       child: Column(
@@ -423,9 +424,9 @@ class AnalyticsView extends StatelessWidget {
                           const SizedBox(height: 4),
                           LinearProgressIndicator(
                             value: ratio,
-                            backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                            backgroundColor: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              ratio > 0.85 ? const Color(0xFFEF4444) : const Color(0xFF4F46E5),
+                              ratio > 0.85 ? const Color(0xFFEF4444) : AppColors.primary,
                             ),
                             minHeight: 5,
                             borderRadius: BorderRadius.circular(4),
@@ -445,10 +446,10 @@ class AnalyticsView extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+              color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),
             ),
             child: Column(
@@ -505,7 +506,7 @@ class AnalyticsView extends StatelessWidget {
                         color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                         ),
                       ),
                       child: Column(
@@ -563,7 +564,7 @@ class AnalyticsView extends StatelessWidget {
                           const SizedBox(height: 4),
                           LinearProgressIndicator(
                             value: goal.progressRatio,
-                            backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                            backgroundColor: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                             valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
                             minHeight: 5,
                             borderRadius: BorderRadius.circular(4),
@@ -584,10 +585,10 @@ class AnalyticsView extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
-                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                 ),
               ),
               child: Column(
@@ -640,7 +641,7 @@ class AnalyticsView extends StatelessWidget {
                           const SizedBox(height: 3),
                           LinearProgressIndicator(
                             value: ratio,
-                            backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                            backgroundColor: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                             valueColor: AlwaysStoppedAnimation<Color>(
                               isExceeded ? const Color(0xFFEF4444) : const Color(0xFFF59E0B),
                             ),
@@ -664,10 +665,10 @@ class AnalyticsView extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                     ),
                   ),
                   child: Column(
@@ -708,10 +709,10 @@ class AnalyticsView extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                     ),
                   ),
                   child: Column(
@@ -757,10 +758,10 @@ class AnalyticsView extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+              color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),
             ),
             child: Row(
@@ -805,10 +806,10 @@ class AnalyticsView extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+              color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),
             ),
             child: Column(
