@@ -171,7 +171,10 @@ class TransactionTile extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 3),
-                        Row(
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 4,
+                          runSpacing: 2,
                           children: [
                             Text(
                               item.category.title,
@@ -181,10 +184,7 @@ class TransactionTile extends StatelessWidget {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 5),
-                              child: Text('•', style: TextStyle(fontSize: 10, color: textMuted)),
-                            ),
+                            Text('•', style: TextStyle(fontSize: 10, color: textMuted)),
                             Text(
                               dateFormat.format(item.date),
                               style: TextStyle(
@@ -193,10 +193,7 @@ class TransactionTile extends StatelessWidget {
                               ),
                             ),
                             if (item.installmentCount > 1) ...[
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 5),
-                                child: Text('•', style: TextStyle(fontSize: 10, color: textMuted)),
-                              ),
+                              Text('•', style: TextStyle(fontSize: 10, color: textMuted)),
                               Text(
                                 '${item.installmentCount} Taksit',
                                 style: const TextStyle(
