@@ -3,13 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../models/transaction_item.dart';
+import '../repositories/transaction_repository.dart';
 import '../services/storage_service.dart';
 
 enum FilterPaymentType { all, creditCard, cash }
 enum SortOrder { dateDesc, dateAsc, amountDesc, amountAsc, titleAsc }
 
 class TransactionController extends ChangeNotifier {
-  final StorageService _storageService;
+  final ITransactionRepository _repository;
   final Uuid _uuid = const Uuid();
 
   List<TransactionItem> _transactions = [];
@@ -31,8 +32,13 @@ class TransactionController extends ChangeNotifier {
   // Seçili Ay Takibi (Ayın 1'inden son gününe kadar dinamik ay filtresi)
   DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
 
-  TransactionController({StorageService? storageService})
-      : _storageService = storageService ?? StorageService();
+  TransactionController({
+    StorageService? storageService,
+    ITransactionRepository? repository,
+  }) : _repository = repository ??
+            TransactionRepository(storageService: storageService ?? StorageService());
+
+  ITransactionRepository get repository => _repository;
 
   bool get isLoading => _isLoading;
   AppSettings get settings => _settings;
@@ -315,11 +321,20 @@ class TransactionController extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _transactions = await _storageService.loadTransactions();
-    _monthlyLimit = await _storageService.loadMonthlyLimit();
-    _settings = await _storageService.loadSettings();
-    _savingsGoals = await _storageService.loadSavingsGoals();
-    _creditCards = await _storageService.loadCreditCards();
+    final txRes = await _repository.getTransactions();
+    _transactions = txRes.dataOrNull ?? [];
+
+    final limitRes = await _repository.getMonthlyLimit();
+    _monthlyLimit = limitRes.dataOrNull ?? 30000.0;
+
+    final settingsRes = await _repository.getSettings();
+    _settings = settingsRes.dataOrNull ?? const AppSettings();
+
+    final goalsRes = await _repository.getSavingsGoals();
+    _savingsGoals = goalsRes.dataOrNull ?? [];
+
+    final cardsRes = await _repository.getCreditCards();
+    _creditCards = cardsRes.dataOrNull ?? [];
 
     _isLoading = false;
     notifyListeners();
@@ -397,7 +412,7 @@ class TransactionController extends ChangeNotifier {
       final current = _transactions[index];
       _transactions[index] = current.copyWith(isFavorite: !current.isFavorite);
       notifyListeners();
-      await _storageService.saveTransactions(_transactions);
+      await _repository.saveTransactions(_transactions);
     }
   }
 
@@ -448,7 +463,7 @@ class TransactionController extends ChangeNotifier {
     _transactions.insert(0, newItem);
     _transactions.sort((a, b) => b.date.compareTo(a.date));
     notifyListeners();
-    await _storageService.saveTransactions(_transactions);
+    await _repository.saveTransactions(_transactions);
   }
 
   Future<void> updateTransaction(TransactionItem updatedItem) async {
@@ -457,14 +472,14 @@ class TransactionController extends ChangeNotifier {
       _transactions[index] = updatedItem;
       _transactions.sort((a, b) => b.date.compareTo(a.date));
       notifyListeners();
-      await _storageService.saveTransactions(_transactions);
+      await _repository.saveTransactions(_transactions);
     }
   }
 
   Future<void> deleteTransaction(String id) async {
     _transactions.removeWhere((e) => e.id == id);
     notifyListeners();
-    await _storageService.saveTransactions(_transactions);
+    await _repository.saveTransactions(_transactions);
   }
 
   // Tasarruf Hedefleri Yönetimi (Kumbaram)
@@ -483,7 +498,7 @@ class TransactionController extends ChangeNotifier {
     );
     _savingsGoals.add(goal);
     notifyListeners();
-    await _storageService.saveSavingsGoals(_savingsGoals);
+    await _repository.saveSavingsGoals(_savingsGoals);
   }
 
   Future<void> depositToSavingsGoal(String goalId, double depositAmount) async {
@@ -498,14 +513,14 @@ class TransactionController extends ChangeNotifier {
         targetDate: current.targetDate,
       );
       notifyListeners();
-      await _storageService.saveSavingsGoals(_savingsGoals);
+      await _repository.saveSavingsGoals(_savingsGoals);
     }
   }
 
   Future<void> deleteSavingsGoal(String goalId) async {
     _savingsGoals.removeWhere((g) => g.id == goalId);
     notifyListeners();
-    await _storageService.saveSavingsGoals(_savingsGoals);
+    await _repository.saveSavingsGoals(_savingsGoals);
   }
 
   // Kredi Kartı Cüzdanı Yönetimi
@@ -528,13 +543,13 @@ class TransactionController extends ChangeNotifier {
     );
     _creditCards.add(card);
     notifyListeners();
-    await _storageService.saveCreditCards(_creditCards);
+    await _repository.saveCreditCards(_creditCards);
   }
 
   Future<void> deleteCreditCard(String cardId) async {
     _creditCards.removeWhere((c) => c.id == cardId);
     notifyListeners();
-    await _storageService.saveCreditCards(_creditCards);
+    await _repository.saveCreditCards(_creditCards);
   }
 
   Future<void> updateCategoryBudget(String categoryName, double budget) async {
@@ -563,19 +578,19 @@ class TransactionController extends ChangeNotifier {
     _selectedTagFilter = null;
     _searchQuery = '';
     notifyListeners();
-    await _storageService.clearAllData();
+    await _repository.clearAllData();
   }
 
   Future<void> updateMonthlyLimit(double newLimit) async {
     _monthlyLimit = newLimit;
     notifyListeners();
-    await _storageService.saveMonthlyLimit(newLimit);
+    await _repository.saveMonthlyLimit(newLimit);
   }
 
   Future<void> updateSettings(AppSettings newSettings) async {
     _settings = newSettings;
     notifyListeners();
-    await _storageService.saveSettings(newSettings);
+    await _repository.saveSettings(newSettings);
   }
 
   // JSON Dışa Aktarma (Export)
@@ -598,25 +613,25 @@ class TransactionController extends ChangeNotifier {
       if (map.containsKey('transactions')) {
         final rawTx = map['transactions'] as List<dynamic>;
         _transactions = rawTx.map((e) => TransactionItem.fromMap(e as Map<String, dynamic>)).toList();
-        await _storageService.saveTransactions(_transactions);
+        await _repository.saveTransactions(_transactions);
       }
       if (map.containsKey('creditCards')) {
         final rawCards = map['creditCards'] as List<dynamic>;
         _creditCards = rawCards.map((e) => CreditCardInfo.fromMap(e as Map<String, dynamic>)).toList();
-        await _storageService.saveCreditCards(_creditCards);
+        await _repository.saveCreditCards(_creditCards);
       }
       if (map.containsKey('savingsGoals')) {
         final rawGoals = map['savingsGoals'] as List<dynamic>;
         _savingsGoals = rawGoals.map((e) => SavingsGoal.fromMap(e as Map<String, dynamic>)).toList();
-        await _storageService.saveSavingsGoals(_savingsGoals);
+        await _repository.saveSavingsGoals(_savingsGoals);
       }
       if (map.containsKey('monthlyLimit')) {
         _monthlyLimit = (map['monthlyLimit'] as num).toDouble();
-        await _storageService.saveMonthlyLimit(_monthlyLimit);
+        await _repository.saveMonthlyLimit(_monthlyLimit);
       }
       if (map.containsKey('settings')) {
         _settings = AppSettings.fromMap(map['settings'] as Map<String, dynamic>);
-        await _storageService.saveSettings(_settings);
+        await _repository.saveSettings(_settings);
       }
       notifyListeners();
       return true;
@@ -738,9 +753,9 @@ class TransactionController extends ChangeNotifier {
     ];
 
     notifyListeners();
-    await _storageService.saveTransactions(_transactions);
-    await _storageService.saveSavingsGoals(_savingsGoals);
-    await _storageService.saveCreditCards(_creditCards);
+    await _repository.saveTransactions(_transactions);
+    await _repository.saveSavingsGoals(_savingsGoals);
+    await _repository.saveCreditCards(_creditCards);
   }
 
   // CSV Dışa Aktarma (Excel uyumlu)

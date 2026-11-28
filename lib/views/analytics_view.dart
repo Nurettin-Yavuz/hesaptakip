@@ -839,8 +839,9 @@ class AnalyticsView extends StatelessWidget {
                 else ...[
                   SizedBox(
                     height: 160,
-                    child: PieChart(
-                      PieChartData(
+                    child: RepaintBoundary(
+                      child: PieChart(
+                        PieChartData(
                         sectionsSpace: 4,
                         centerSpaceRadius: 40,
                         sections: [
@@ -868,6 +869,7 @@ class AnalyticsView extends StatelessWidget {
                           ),
                         ],
                       ),
+                    ),
                     ),
                   ),
                   const SizedBox(height: 12),

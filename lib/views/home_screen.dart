@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../controllers/theme_controller.dart';
 import '../controllers/transaction_controller.dart';
 import '../models/transaction_item.dart';
@@ -280,8 +281,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          body: IndexedStack(
-            index: _currentNavIndex,
+          body: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: IndexedStack(
+                index: _currentNavIndex,
             children: [
               // 1. Ekran: Harcamalar & 1-30 Günlük Zaman Çizelgesi
               CustomScrollView(
@@ -617,9 +622,14 @@ class _HomeScreenState extends State<HomeScreen> {
               SettingsView(controller: _controller),
             ],
           ),
+          ),
+          ),
           bottomNavigationBar: NavigationBar(
             selectedIndex: _currentNavIndex,
-            onDestinationSelected: (index) => setState(() => _currentNavIndex = index),
+            onDestinationSelected: (index) {
+              HapticFeedback.selectionClick();
+              setState(() => _currentNavIndex = index);
+            },
             backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
             indicatorColor: AppColors.primary.withValues(alpha: 0.12),
             destinations: const [
@@ -642,7 +652,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           floatingActionButton: _currentNavIndex == 0
               ? FloatingActionButton.extended(
-                  onPressed: () => _openAddExpenseSheet(),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    _openAddExpenseSheet();
+                  },
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   elevation: 2,
@@ -668,7 +681,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final isSelected = _controller.selectedFilter == filter;
     return ChoiceChip(
       selected: isSelected,
-      onSelected: (_) => _controller.setFilter(filter),
+      onSelected: (_) {
+        HapticFeedback.selectionClick();
+        _controller.setFilter(filter);
+      },
       avatar: icon != null
           ? Icon(
               icon,

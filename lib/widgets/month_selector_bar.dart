@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 
@@ -43,12 +44,18 @@ class MonthSelectorBar extends StatelessWidget {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
             icon: Icon(Icons.chevron_left_rounded, size: 20, color: textSecondary),
-            onPressed: onPrevious,
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              onPrevious();
+            },
             tooltip: 'Önceki Ay',
           ),
           Expanded(
             child: InkWell(
-              onTap: () => _showMonthPickerSheet(context),
+              onTap: () {
+                HapticFeedback.selectionClick();
+                _showMonthPickerSheet(context);
+              },
               borderRadius: BorderRadius.circular(8),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
@@ -90,7 +97,10 @@ class MonthSelectorBar extends StatelessWidget {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
             icon: Icon(Icons.chevron_right_rounded, size: 20, color: textSecondary),
-            onPressed: onNext,
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              onNext();
+            },
             tooltip: 'Sonraki Ay',
           ),
         ],

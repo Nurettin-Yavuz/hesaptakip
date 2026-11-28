@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../models/transaction_item.dart';
 import '../theme/app_theme.dart';
@@ -141,6 +142,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
           ) ??
           0.0;
 
+      HapticFeedback.mediumImpact();
       widget.onSave(
         title: _titleController.text.trim(),
         amount: amount,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../models/transaction_item.dart';
 import '../theme/app_theme.dart';
@@ -28,8 +29,9 @@ class RatioIndicatorCard extends StatelessWidget {
     final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
     final textMuted = isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted;
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+    return RepaintBoundary(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 6, 16, 8),
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
         color: surfaceColor,
@@ -83,7 +85,10 @@ class RatioIndicatorCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               InkWell(
-                onTap: onEditLimit,
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  onEditLimit();
+                },
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -371,6 +376,7 @@ class RatioIndicatorCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

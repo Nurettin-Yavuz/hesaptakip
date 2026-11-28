@@ -255,6 +255,7 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: const Text('Harcamaları tek satırlık yoğun liste halinde göster', style: TextStyle(fontSize: 11)),
                 value: settings.compactListView,
                 onChanged: (val) {
+                  HapticFeedback.selectionClick();
                   widget.controller.updateSettings(settings.copyWith(compactListView: val));
                 },
               ),
@@ -266,6 +267,7 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: const Text('Toplu alanlarda harcama tutarlarını gizle (₺••••)', style: TextStyle(fontSize: 11)),
                 value: settings.hideSensitiveAmounts,
                 onChanged: (val) {
+                  HapticFeedback.selectionClick();
                   widget.controller.updateSettings(settings.copyWith(hideSensitiveAmounts: val));
                 },
               ),
@@ -277,6 +279,7 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: const Text('Günün harcamalarını kaydetmeyi hatırlat', style: TextStyle(fontSize: 11)),
                 value: settings.enableDailyReminders,
                 onChanged: (val) {
+                  HapticFeedback.selectionClick();
                   widget.controller.updateSettings(settings.copyWith(enableDailyReminders: val));
                 },
               ),

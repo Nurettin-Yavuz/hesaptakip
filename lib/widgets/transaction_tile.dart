@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../models/transaction_item.dart';
 import '../theme/app_theme.dart';
@@ -34,72 +35,85 @@ class TransactionTile extends StatelessWidget {
     final textMuted = isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
-    return Dismissible(
-      key: Key(item.id),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-        padding: const EdgeInsets.only(right: 20),
-        decoration: BoxDecoration(
-          color: AppColors.crimson,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        alignment: Alignment.centerRight,
-        child: const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 20),
-      ),
-      confirmDismiss: (direction) async {
-        return await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: borderColor, width: 0.8),
-            ),
-            title: Text(
-              'Harcamayı Sil',
-              style: TextStyle(
-                color: textPrimary,
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-                letterSpacing: -0.4,
-              ),
-            ),
-            content: Text(
-              '"${item.title}" kaydını silmek istediğinizden emin misiniz?',
-              style: TextStyle(
-                color: textSecondary,
-                fontSize: 13,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text('Vazgeç', style: TextStyle(color: textSecondary)),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.crimson,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                child: const Text('Sil'),
-              ),
-            ],
+    return RepaintBoundary(
+      child: Dismissible(
+        key: Key(item.id),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          padding: const EdgeInsets.only(right: 20),
+          decoration: BoxDecoration(
+            color: AppColors.crimson,
+            borderRadius: BorderRadius.circular(12),
           ),
-        );
-      },
-      onDismissed: (_) => onDelete(),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-        child: Material(
-          color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-          borderRadius: BorderRadius.circular(14),
-          child: InkWell(
-            onTap: onTap,
+          alignment: Alignment.centerRight,
+          child: const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 20),
+        ),
+        confirmDismiss: (direction) async {
+          return await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: borderColor, width: 0.8),
+              ),
+              title: Text(
+                'Harcamayı Sil',
+                style: TextStyle(
+                  color: textPrimary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  letterSpacing: -0.4,
+                ),
+              ),
+              content: Text(
+                '"${item.title}" kaydını silmek istediğinizden emin misiniz?',
+                style: TextStyle(
+                  color: textSecondary,
+                  fontSize: 13,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.pop(ctx, false);
+                  },
+                  child: Text('Vazgeç', style: TextStyle(color: textSecondary)),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    HapticFeedback.mediumImpact();
+                    Navigator.pop(ctx, true);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.crimson,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text('Sil'),
+                ),
+              ],
+            ),
+          );
+        },
+        onDismissed: (_) {
+          HapticFeedback.mediumImpact();
+          onDelete();
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          child: Material(
+            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
             borderRadius: BorderRadius.circular(14),
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                onTap();
+              },
+              borderRadius: BorderRadius.circular(14),
             child: Container(
               padding: EdgeInsets.symmetric(
                 horizontal: 14,
@@ -260,7 +274,10 @@ class TransactionTile extends StatelessWidget {
                           const SizedBox(width: 6),
                           // Favori
                           InkWell(
-                            onTap: onToggleFavorite,
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              onToggleFavorite();
+                            },
                             borderRadius: BorderRadius.circular(4),
                             child: Icon(
                               item.isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
@@ -271,7 +288,10 @@ class TransactionTile extends StatelessWidget {
                           const SizedBox(width: 5),
                           // Kopyala
                           InkWell(
-                            onTap: onDuplicate,
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              onDuplicate();
+                            },
                             borderRadius: BorderRadius.circular(4),
                             child: Icon(
                               Icons.copy_rounded,
@@ -288,6 +308,7 @@ class TransactionTile extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }

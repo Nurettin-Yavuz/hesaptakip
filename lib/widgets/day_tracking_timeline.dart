@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 
@@ -32,8 +33,9 @@ class DayTrackingTimeline extends StatelessWidget {
     final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
     final textMuted = isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+    return RepaintBoundary(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: surfaceColor,
@@ -62,7 +64,10 @@ class DayTrackingTimeline extends StatelessWidget {
               ),
               if (selectedDay != null) ...[
                 InkWell(
-                  onTap: () => onSelectDay?.call(selectedDay!),
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onSelectDay?.call(selectedDay!);
+                  },
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
@@ -115,7 +120,10 @@ class DayTrackingTimeline extends StatelessWidget {
                 final double barRatio = maxSpent > 0 ? (spent / maxSpent).clamp(0.08, 1.0) : 0.08;
 
                 return GestureDetector(
-                  onTap: () => onSelectDay?.call(day),
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    onSelectDay?.call(day);
+                  },
                   child: Container(
                     width: 28,
                     margin: const EdgeInsets.only(right: 6),
@@ -192,6 +200,7 @@ class DayTrackingTimeline extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }
