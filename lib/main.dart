@@ -10,28 +10,37 @@ export 'views/home_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('tr_TR', null);
-  runApp(const KrediKartiHesapTakipApp());
+  final themeController = ThemeController();
+  await themeController.initialize();
+  runApp(KrediKartiHesapTakipApp(themeController: themeController));
 }
 
 class KrediKartiHesapTakipApp extends StatefulWidget {
-  const KrediKartiHesapTakipApp({super.key});
+  final ThemeController? themeController;
+
+  const KrediKartiHesapTakipApp({super.key, this.themeController});
 
   @override
   State<KrediKartiHesapTakipApp> createState() => _KrediKartiHesapTakipAppState();
 }
 
 class _KrediKartiHesapTakipAppState extends State<KrediKartiHesapTakipApp> {
-  final ThemeController _themeController = ThemeController();
+  late final ThemeController _themeController;
 
   @override
   void initState() {
     super.initState();
-    _themeController.initialize();
+    _themeController = widget.themeController ?? ThemeController();
+    if (widget.themeController == null) {
+      _themeController.initialize();
+    }
   }
 
   @override
   void dispose() {
-    _themeController.dispose();
+    if (widget.themeController == null) {
+      _themeController.dispose();
+    }
     super.dispose();
   }
 
@@ -62,4 +71,3 @@ class _KrediKartiHesapTakipAppState extends State<KrediKartiHesapTakipApp> {
     );
   }
 }
-
