@@ -285,9 +285,18 @@ class _HomeScreenState extends State<HomeScreen> {
             alignment: Alignment.topCenter,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 720),
-              child: IndexedStack(
-                index: _currentNavIndex,
-            children: [
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 240),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                child: KeyedSubtree(
+                  key: ValueKey<int>(_currentNavIndex),
+                  child: IndexedStack(
+                    index: _currentNavIndex,
+                    children: [
               // 1. Ekran: Harcamalar & 1-30 Günlük Zaman Çizelgesi
               CustomScrollView(
                 slivers: [
@@ -547,51 +556,65 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (transactions.isEmpty)
                     SliverFillRemaining(
                       hasScrollBody: false,
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(32.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.receipt_long_rounded,
-                                size: 40,
-                                color: isDark ? const Color(0xFF475569) : const Color(0xFF94A3B8),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Henüz Harcama Kaydı Yok',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                      child: TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 380),
+                        curve: Curves.easeOutCubic,
+                        tween: Tween<double>(begin: 0.0, end: 1.0),
+                        builder: (context, val, child) {
+                          return Opacity(
+                            opacity: val,
+                            child: Transform.translate(
+                              offset: Offset(0, 16 * (1 - val)),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.receipt_long_rounded,
+                                  size: 40,
+                                  color: isDark ? const Color(0xFF475569) : const Color(0xFF94A3B8),
                                 ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Bu aya ait herhangi bir harcama bulunmuyor. Yeni bir harcama ekleyerek bütçenizi yönetmeye başlayabilirsiniz.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Henüz Harcama Kaydı Yok',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 14),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  HapticFeedback.lightImpact();
-                                  _openAddExpenseSheet();
-                                },
-                                icon: const Icon(Icons.add_rounded, size: 16),
-                                label: const Text('Harcama Ekle'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Bu aya ait herhangi bir harcama bulunmuyor. Yeni bir harcama ekleyerek bütçenizi yönetmeye başlayabilirsiniz.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                                  ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 14),
+                                ElevatedButton.icon(
+                                  onPressed: () {
+                                    HapticFeedback.lightImpact();
+                                    _openAddExpenseSheet();
+                                  },
+                                  icon: const Icon(Icons.add_rounded, size: 16),
+                                  label: const Text('Harcama Ekle'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -625,6 +648,8 @@ class _HomeScreenState extends State<HomeScreen> {
               // 3. Ekran: Ayarlar, Bütçe, Kesim Günü & Dışa Aktarma
               SettingsView(controller: _controller),
             ],
+          ),
+          ),
           ),
           ),
           ),
