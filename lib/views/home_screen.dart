@@ -602,6 +602,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         (context, index) {
                           final item = transactions[index];
                           return TransactionTile(
+                            index: index,
                             item: item,
                             onTap: () => _openAddExpenseSheet(item),
                             onDelete: () => _controller.deleteTransaction(item.id),
