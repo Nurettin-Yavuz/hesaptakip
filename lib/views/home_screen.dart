@@ -560,7 +560,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                'Bu Ay İçin Harcama Yok',
+                                'Henüz Harcama Kaydı Yok',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
@@ -569,7 +569,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Harcama ekleyebilir veya tek dokunuşla hazır demo verilerini yükleyebilirsiniz.',
+                                'Bu aya ait herhangi bir harcama bulunmuyor. Yeni bir harcama ekleyerek bütçenizi yönetmeye başlayabilirsiniz.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 12,
@@ -578,9 +578,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(height: 14),
                               ElevatedButton.icon(
-                                onPressed: () => _controller.loadDemoData(),
-                                icon: const Icon(Icons.auto_awesome_rounded, size: 16),
-                                label: const Text('Örnek Demo Verileri Yükle'),
+                                onPressed: () {
+                                  HapticFeedback.lightImpact();
+                                  _openAddExpenseSheet();
+                                },
+                                icon: const Icon(Icons.add_rounded, size: 16),
+                                label: const Text('Harcama Ekle'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primary,
                                   foregroundColor: Colors.white,

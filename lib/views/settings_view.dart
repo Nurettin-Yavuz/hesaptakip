@@ -288,7 +288,7 @@ class _SettingsViewState extends State<SettingsView> {
 
           const SizedBox(height: 16),
 
-          // 3. Kart: Yedekleme, Dışa Aktarma ve Demo Veri
+          // 3. Kart: Yedekleme ve Dışa Aktarma
           _buildSettingsCard(
             isDark: isDark,
             title: 'Veri & Yedekleme Yönetimi',
@@ -330,22 +330,6 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: const Text('Daha önce aldığınız yedeği geri yükleyin', style: TextStyle(fontSize: 11)),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
                 onTap: () => _showRestoreDialog(context),
-              ),
-              const Divider(height: 16),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.auto_awesome_rounded, color: Color(0xFFF59E0B)),
-                title: const Text('Örnek Demo Verileri Yükle', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-                subtitle: const Text('Gerçekçi harcamalar, kartlar ve birikim hedefleri ekle', style: TextStyle(fontSize: 11)),
-                trailing: const Icon(Icons.add_task_rounded, size: 16, color: Color(0xFFF59E0B)),
-                onTap: () async {
-                  await widget.controller.loadDemoData();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Örnek demo verileri ve kartlar başarıyla yüklendi!')),
-                    );
-                  }
-                },
               ),
             ],
           ),
